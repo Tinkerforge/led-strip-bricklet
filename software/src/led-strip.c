@@ -46,31 +46,76 @@ void spibb_write_byte(const uint8_t value) {
 	}
 }
 
+void set_rgb_by_global_index(uint16_t index, uint8_t r, uint8_t g, uint8_t b) {
+	uint8_t bc_num = 0;
+	for(; bc_num < 4; bc_num++) {
+		if(BC->bcs & (1 << bc_num)) {
+			if(index >= RGB_LENGTH) {
+				index -= RGB_LENGTH;
+			} else {
+				break;
+			}
+		}
+	}
+
+	if(index > RGB_LENGTH) {
+		return;
+	}
+
+	BrickContext *bc = BCO_DIRECT(bc_num + BC->rgb_bc_diff);
+
+	bc->rgb.r[index] = r;
+	bc->rgb.g[index] = g;
+	bc->rgb.b[index] = b;
+}
+
+void get_rgb_from_global_index(uint16_t index, uint8_t *r, uint8_t *g, uint8_t *b) {
+	uint8_t bc_num = 0;
+	for(; bc_num < 4; bc_num++) {
+		if(BC->bcs & (1 << bc_num)) {
+			if(index >= RGB_LENGTH) {
+				index -= RGB_LENGTH;
+			} else {
+				break;
+			}
+		}
+	}
+
+	if(index > RGB_LENGTH) {
+		return;
+	}
+
+	BrickContext *bc = BCO_DIRECT(bc_num + BC->rgb_bc_diff);
+
+	*r = bc->rgb.r[index];
+	*g = bc->rgb.g[index];
+	*b = bc->rgb.b[index];
+}
+
 void set_rgb_values(const ComType com, const SetRGBValues *data) {
-	// TODO: If index + length to big -> error
+	if((data->index + data->length > BC->frame_max_length) || (data->length > RGB_VALUE_SIZE)) {
+		BA->com_return_error(data, sizeof(MessageHeader), MESSAGE_ERROR_CODE_INVALID_PARAMETER, com);
+	}
 
 	BC->frame_length = MAX(BC->frame_length, data->index + data->length);
 
-	const uint8_t length = MIN(data->length, RGB_VALUE_SIZE);
-	for(uint8_t i = 0; i < length; i++) {
-		BC->r[data->index + i] = data->r[i];
-		BC->g[data->index + i] = data->g[i];
-		BC->b[data->index + i] = data->b[i];
+	for(uint8_t i = 0; i < data->length; i++) {
+		set_rgb_by_global_index(data->index + i, data->r[i], data->g[i], data->b[i]);
 	}
 
 	BA->com_return_setter(com, data);
 }
 
 void get_rgb_values(const ComType com, const GetRGBValues *data) {
-	// TODO: If index + length to big -> error
+	if((data->index + data->length > BC->frame_max_length) || (data->length > RGB_VALUE_SIZE)) {
+		BA->com_return_error(data, sizeof(MessageHeader), MESSAGE_ERROR_CODE_INVALID_PARAMETER, com);
+	}
 
 	GetRGBValuesReturn grgbvr;
 	grgbvr.header         = data->header;
 	grgbvr.header.length  = sizeof(GetRGBValuesReturn);
-	for(uint16_t i = data->index; i < MAX(RGB_LENGTH, data->index + data->length); i++) {
-		grgbvr.r[i-data->index] = BC->r[i];
-		grgbvr.g[i-data->index] = BC->g[i];
-		grgbvr.b[i-data->index] = BC->b[i];
+	for(uint16_t i = data->index; i < data->index + data->length; i++) {
+		get_rgb_from_global_index(i, &grgbvr.r[i-data->index], &grgbvr.g[i-data->index], &grgbvr.b[i-data->index]);
 	}
 
 	BA->send_blocking_with_timeout(&grgbvr, sizeof(GetRGBValuesReturn), com);
@@ -135,6 +180,19 @@ void invocation(const ComType com, const uint8_t *data) {
 	}
 }
 
+void reconfigure_bcs(void) {
+	BC->rgb_bc_diff = -(BS->port - 'a');
+
+	if(BSO_DIRECT(BC->rgb_bc_diff+1)->address == I2C_EEPROM_ADDRESS_HIGH) {
+		BC->rgb_length = 4;
+	} else {
+		BC->rgb_length = 2;
+	}
+
+	BC->frame_max_length = RGB_LENGTH;
+	BC->bcs = 0;
+}
+
 void constructor(void) {
 	_Static_assert(sizeof(BrickContext) <= BRICKLET_CONTEXT_MAX_SIZE, "BrickContext too big");
 	adc_channel_enable(BS->adc_channel);
@@ -162,6 +220,8 @@ void constructor(void) {
 	BC->frame_set_counter = 0;
 	BC->frame_rendered = false;
 	BC->frame_length = 0;
+
+	reconfigure_bcs();
 }
 
 void destructor(void) {
@@ -182,6 +242,16 @@ void destructor(void) {
 
 void tick(const uint8_t tick_type) {
 	if(tick_type & TICK_TASK_TYPE_CALCULATION) {
+		if(BC->bcs == 0) {
+			for(uint8_t i = 0; i < 4; i++) {
+				if(BSO_DIRECT(i + BC->rgb_bc_diff)->device_identifier == 0) {
+					BC->bcs |= 1 << i;
+					BC->frame_max_length += RGB_LENGTH;
+				}
+			}
+			BC->bcs |= 1 << ABS(BC->rgb_bc_diff);
+		}
+
 		if(BC->frame_set_counter > 0) {
 			BC->frame_set_counter--;
 			if(BC->frame_set_counter == 0) {
@@ -201,9 +271,14 @@ void tick(const uint8_t tick_type) {
 				__disable_irq();
 				PIN_SPI_SS.pio->PIO_CODR = PIN_SPI_SS.mask;
 				for(uint8_t i = 0; i < BC->frame_length; i++) {
-					spibb_write_byte(BC->b[i]);
-					spibb_write_byte(BC->g[i]);
-					spibb_write_byte(BC->r[i]);
+					uint8_t r = 0;
+					uint8_t g = 0;
+					uint8_t b = 0;
+
+					get_rgb_from_global_index(i, &r, &g, &b);
+					spibb_write_byte(b);
+					spibb_write_byte(g);
+					spibb_write_byte(r);
 				}
 				PIN_SPI_SS.pio->PIO_SODR = PIN_SPI_SS.mask;
 				__enable_irq();

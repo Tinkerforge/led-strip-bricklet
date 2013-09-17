@@ -25,6 +25,9 @@
 #include <stdint.h>
 #include "bricklib/com/com_common.h"
 
+#define I2C_EEPROM_ADDRESS_HIGH 84
+
+#define RGB_LENGTH 80
 #define RGB_VALUE_SIZE 16
 
 #define FID_SET_RGB_VALUES      1
@@ -33,6 +36,12 @@
 #define FID_GET_FRAME_DURATION  4
 #define FID_GET_SUPPLY_VOLTAGE  5
 #define FID_FRAME_RENDERED      6
+
+typedef struct {
+	uint8_t r[RGB_LENGTH];
+	uint8_t g[RGB_LENGTH];
+	uint8_t b[RGB_LENGTH];
+} __attribute__((__packed__)) RGB;
 
 typedef struct {
 	MessageHeader header;
@@ -91,6 +100,8 @@ void get_frame_duration(const ComType com, const GetFrameDuration *data);
 void get_supply_voltage(const ComType com, const GetSupplyVoltage *data);
 
 void spibb_write_byte(const uint8_t value);
+void set_rgb_by_global_index(uint16_t index, uint8_t r, uint8_t g, uint8_t b);
+void get_rgb_from_global_index(uint16_t index, uint8_t *r, uint8_t *g, uint8_t *b);
 
 void invocation(const ComType com, const uint8_t *data);
 void constructor(void);

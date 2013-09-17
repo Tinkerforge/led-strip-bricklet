@@ -52,19 +52,21 @@
 #define BRICKLET_NO_OFFSET
 #define INVOCATION_IN_BRICKLET_CODE
 
-#define RGB_LENGTH 80
+#define MAX_BRICKLET_CONFIGS
 
 typedef struct {
-	uint8_t r[RGB_LENGTH];
-	uint8_t g[RGB_LENGTH];
-	uint8_t b[RGB_LENGTH];
+	RGB rgb;
 
 	uint16_t frame_duration;
 	uint16_t frame_counter;
 	uint16_t frame_set_counter;
-	bool frame_rendered;
 	uint16_t frame_length;
 	uint16_t frame_length_callback;
+	uint16_t frame_max_length;
+	int8_t rgb_bc_diff;
+	uint8_t rgb_length;
+	uint8_t bcs;
+	bool frame_rendered;
 } BrickContext;
 
 #endif
