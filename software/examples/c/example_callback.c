@@ -18,8 +18,10 @@ uint8_t r_index = 0;
 // Frame rendered callback, is called when a new frame was rendered
 // We increase the index of one blue LED with every frame
 void cb_frame_rendered(uint16_t length, void *user_data) {
+	(void)length; // avoid unused parameter warning
+
 	LEDStrip *led_strip = (LEDStrip *)user_data;
-		
+
 	b[r_index] = 0;
 	if(r_index == NUM_LEDS-1) {
 		r_index = 0;
