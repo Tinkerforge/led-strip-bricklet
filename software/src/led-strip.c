@@ -270,7 +270,7 @@ void tick(const uint8_t tick_type) {
 			if(BC->frame_length > 0) {
 				__disable_irq();
 				PIN_SPI_SS.pio->PIO_CODR = PIN_SPI_SS.mask;
-				for(uint8_t i = 0; i < BC->frame_length; i++) {
+				for(uint16_t i = 0; i < BC->frame_length; i++) {
 					uint8_t r = 0;
 					uint8_t g = 0;
 					uint8_t b = 0;
