@@ -95,6 +95,7 @@ void get_rgb_from_global_index(uint16_t index, uint8_t *r, uint8_t *g, uint8_t *
 void set_rgb_values(const ComType com, const SetRGBValues *data) {
 	if((data->index + data->length > BC->frame_max_length) || (data->length > RGB_VALUE_SIZE)) {
 		BA->com_return_error(data, sizeof(MessageHeader), MESSAGE_ERROR_CODE_INVALID_PARAMETER, com);
+		return;
 	}
 
 	BC->frame_length = MAX(BC->frame_length, data->index + data->length);
@@ -109,6 +110,7 @@ void set_rgb_values(const ComType com, const SetRGBValues *data) {
 void get_rgb_values(const ComType com, const GetRGBValues *data) {
 	if((data->index + data->length > BC->frame_max_length) || (data->length > RGB_VALUE_SIZE)) {
 		BA->com_return_error(data, sizeof(MessageHeader), MESSAGE_ERROR_CODE_INVALID_PARAMETER, com);
+		return;
 	}
 
 	GetRGBValuesReturn grgbvr;
