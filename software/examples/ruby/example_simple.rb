@@ -2,23 +2,25 @@
 # -*- ruby encoding: utf-8 -*-
 
 require 'tinkerforge/ip_connection'
-require 'tinkerforge/bricklet_ambient_light'
+require 'tinkerforge/bricklet_led_strip'
 
 include Tinkerforge
 
 HOST = 'localhost'
 PORT = 4223
-UID = '7tS' # Change to your UID
+UID = 'abc' # Change to your UID
 
 ipcon = IPConnection.new # Create IP connection
-al = BrickletAmbientLight.new UID, ipcon # Create device object
+led_strip = BrickletLEDStrip.new UID, ipcon # Create device object
 
 ipcon.connect HOST, PORT # Connect to brickd
 # Don't use device before ipcon is connected
 
-# Get current illuminance (unit is Lux/10)
-illuminance = al.get_illuminance / 10.0
-puts "Illuminance: #{illuminance} Lux"
+# Set first 10 LEDs to green
+r = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+g = [255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 0, 0, 0, 0, 0, 0]
+b = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ,0 ,0]
+led_strip.set_rgb_values 0, 10, r, g, b
 
 puts 'Press key to exit'
 $stdin.gets

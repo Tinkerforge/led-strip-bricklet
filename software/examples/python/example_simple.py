@@ -3,22 +3,23 @@
 
 HOST = "localhost"
 PORT = 4223
-UID = "XYZ" # Change to your UID
+UID = "abc" # Change to your UID
 
 from tinkerforge.ip_connection import IPConnection
-from tinkerforge.bricklet_ambient_light import AmbientLight
+from tinkerforge.bricklet_led_strip import LEDStrip
 
 if __name__ == "__main__":
     ipcon = IPConnection() # Create IP connection
-    al = AmbientLight(UID, ipcon) # Create device object
+    led_strip = LEDStrip(UID, ipcon) # Create device object
 
     ipcon.connect(HOST, PORT) # Connect to brickd
     # Don't use device before ipcon is connected
 
-    # Get current illuminance (unit is Lux/10)
-    illuminance = al.get_illuminance()/10.0
-
-    print('Illuminance: ' + str(illuminance) + ' Lux')
+    # Set first 10 LEDs to green
+    r = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    g = [255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 0, 0, 0, 0, 0, 0]
+    b = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ,0 ,0]
+    led_strip.set_rgb_values(0, 10, r, g, b)
 
     raw_input('Press key to exit\n') # Use input() in Python 3
     ipcon.disconnect()

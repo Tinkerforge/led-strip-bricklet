@@ -3,29 +3,49 @@
 
 HOST = "localhost"
 PORT = 4223
-UID = "XYZ" # Change to your UID
+UID = "abc" # Change to your UID
+
+NUM_LEDS = 16
+
+r = [0]*NUM_LEDS
+g = [0]*NUM_LEDS
+b = [0]*NUM_LEDS
+r_index = 0
 
 from tinkerforge.ip_connection import IPConnection
-from tinkerforge.bricklet_ambient_light import AmbientLight
+from tinkerforge.bricklet_led_strip import LEDStrip
 
-# Callback function for illuminance callback (parameter has unit Lux/10)
-def cb_illuminance(illuminance):
-    print('Illuminance: ' + str(illuminance/10.0) + ' Lux')
+# Frame rendered callback, is called when a new frame was rendered
+# We increase the index of one blue LED with every frame
+def cb_frame_rendered(led_strip, length):
+    global r_index
+    b[r_index] = 0
+    if r_index == NUM_LEDS-1:
+        r_index = 0
+    else:
+        r_index += 1
+
+    b[r_index] = 255
+
+    # Set new data for next render cycle
+    led_strip.set_rgb_values(0, NUM_LEDS, r, g, b)
 
 if __name__ == "__main__":
     ipcon = IPConnection() # Create IP connection
-    al = AmbientLight(UID, ipcon) # Create device object
+    led_strip = LEDStrip(UID, ipcon) # Create device object
 
     ipcon.connect(HOST, PORT) # Connect to brickd
     # Don't use device before ipcon is connected
 
-    # Set Period for illuminance callback to 1s (1000ms)
-    # Note: The illuminance callback is only called every second if the 
-    #       illuminance has changed since the last call!
-    al.set_illuminance_callback_period(1000)
+    # Set frame duration to 50ms (20 frames per second)
+    led_strip.set_frame_duration(50)
 
-    # Register illuminance callback to function cb_illuminance
-    al.register_callback(al.CALLBACK_ILLUMINANCE, cb_illuminance)
+    # Register frame rendered callback to function cb_frame_rendered
+    led_strip.register_callback(led_strip.CALLBACK_FRAME_RENDERED, 
+                                lambda x: cb_frame_rendered(led_strip, x))
+
+    # Set initial rgb values to get started
+    led_strip.set_rgb_values(0, NUM_LEDS, r, g, b)
 
     raw_input('Press key to exit\n') # Use input() in Python 3
     ipcon.disconnect()
