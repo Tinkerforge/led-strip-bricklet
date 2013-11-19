@@ -29,7 +29,6 @@ LIBS:opto
 LIBS:atmel
 LIBS:contrib
 LIBS:valves
-LIBS:tinkerforge
 LIBS:led_strip-cache
 EELAYER 27 0
 EELAYER END
@@ -37,7 +36,7 @@ $Descr A4 11693 8268
 encoding utf-8
 Sheet 1 1
 Title "LED Strip Bricklet"
-Date "20 sep 2013"
+Date "25 oct 2013"
 Rev "1.0"
 Comp "Tinkerforge GmbH"
 Comment1 "Licensed under CERN OHL v.1.1"
@@ -366,7 +365,7 @@ L R_PACK4 RP2
 U 1 1 5200DCA6
 P 6250 3850
 F 0 "RP2" H 6250 4300 40  0000 C CNN
-F 1 "4k7" H 6250 3800 40  0000 C CNN
+F 1 "1k" H 6250 3800 40  0000 C CNN
 F 2 "4X0603" H 6250 3850 60  0001 C CNN
 F 3 "" H 6250 3850 60  0000 C CNN
 	1    6250 3850

@@ -1,4 +1,4 @@
-(kicad_pcb (version 3) (host pcbnew "(2013-05-18 BZR 4017)-stable")
+(kicad_pcb (version 3) (host pcbnew "(2013-07-24 BZR 4024)-stable")
 
   (general
     (links 43)
@@ -617,13 +617,13 @@
     )
   )
 
-  (module 4X0603 (layer Vorderseite) (tedit 523C1BAB) (tstamp 5202512F)
+  (module 4X0603 (layer Vorderseite) (tedit 526A4B39) (tstamp 5202512F)
     (at 55.6 45.4 270)
     (path /5200DCA6)
     (fp_text reference RP2 (at 0 -1.6002 270) (layer F.SilkS)
       (effects (font (size 0.29972 0.29972) (thickness 0.0762)))
     )
-    (fp_text value 4k7 (at 0 0 270) (layer F.SilkS)
+    (fp_text value 1k (at 0 0 270) (layer F.SilkS)
       (effects (font (size 0.29972 0.29972) (thickness 0.07493)))
     )
     (fp_line (start -1.6002 -0.8001) (end -1.6002 0.8001) (layer F.SilkS) (width 0.01016))
