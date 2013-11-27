@@ -33,13 +33,12 @@ led_strip.register_callback(BrickletLEDStrip::CALLBACK_FRAME_RENDERED) do |lengt
         r_index = 0
     else
         r_index += 1
-	end
+    end
 
     b[r_index] = 255
 
     # Set new data for next render cycle
     led_strip.set_rgb_values 0, NUM_LEDS, r, g, b
-
 end
 
 # Set initial rgb values to get started
