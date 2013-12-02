@@ -18,7 +18,7 @@ if __name__ == "__main__":
     # Set first 10 LEDs to green
     r = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
     g = [255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 0, 0, 0, 0, 0, 0]
-    b = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ,0 ,0]
+    b = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
     led_strip.set_rgb_values(0, 10, r, g, b)
 
     raw_input('Press key to exit\n') # Use input() in Python 3
