@@ -31,7 +31,7 @@
 
 #define BRICKLET_FIRMWARE_VERSION_MAJOR 2
 #define BRICKLET_FIRMWARE_VERSION_MINOR 0
-#define BRICKLET_FIRMWARE_VERSION_REVISION 0
+#define BRICKLET_FIRMWARE_VERSION_REVISION 1
 
 #define BRICKLET_HARDWARE_VERSION_MAJOR 1
 #define BRICKLET_HARDWARE_VERSION_MINOR 0
@@ -61,8 +61,8 @@ typedef struct {
 	uint16_t frame_counter;
 	uint16_t frame_set_counter;
 	uint16_t frame_length;
-	uint16_t frame_length_callback;
 	uint16_t frame_max_length;
+	uint16_t clock_delay;
 	int8_t rgb_bc_diff;
 	uint8_t rgb_length;
 	uint8_t bcs;

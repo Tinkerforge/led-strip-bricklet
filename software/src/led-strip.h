@@ -36,6 +36,8 @@
 #define FID_GET_FRAME_DURATION  4
 #define FID_GET_SUPPLY_VOLTAGE  5
 #define FID_FRAME_RENDERED      6
+#define FID_SET_CLOCK_FREQUENCY 7
+#define FID_GET_CLOCK_FREQUENCY 8
 
 typedef struct {
 	uint8_t r[RGB_LENGTH];
@@ -93,11 +95,27 @@ typedef struct {
 	uint16_t length;
 } __attribute__((__packed__)) FrameRendered;
 
+typedef struct {
+	MessageHeader header;
+	uint32_t frequency;
+} __attribute__((__packed__)) SetClockFrequency;
+
+typedef struct {
+	MessageHeader header;
+} __attribute__((__packed__)) GetClockFrequency;
+
+typedef struct {
+	MessageHeader header;
+	uint32_t frequency;
+} __attribute__((__packed__)) GetClockFrequencyReturn;
+
 void set_rgb_values(const ComType com, const SetRGBValues *data);
 void get_rgb_values(const ComType com, const GetRGBValues *data);
 void set_frame_duration(const ComType com, const SetFrameDuration *data);
 void get_frame_duration(const ComType com, const GetFrameDuration *data);
 void get_supply_voltage(const ComType com, const GetSupplyVoltage *data);
+void set_clock_frequency(const ComType com, const SetClockFrequency *data);
+void get_clock_frequency(const ComType com, const GetClockFrequency *data);
 
 void spibb_write_byte(const uint8_t value);
 void set_rgb_by_global_index(uint16_t index, uint8_t r, uint8_t g, uint8_t b);

@@ -36,12 +36,9 @@ void spibb_write_byte(const uint8_t value) {
 			PIN_SPI_SDI.pio->PIO_SODR = PIN_SPI_SDI.mask;
 		}
 
-		//SLEEP_US(1);
-		SLEEP_NS(250);
-
+		SLEEP_NS(BC->clock_delay);
 		PIN_SPI_CKI.pio->PIO_CODR = PIN_SPI_CKI.mask;
-		//SLEEP_US(1);
-		SLEEP_NS(250);
+		SLEEP_NS(BC->clock_delay);
 		PIN_SPI_CKI.pio->PIO_SODR = PIN_SPI_CKI.mask;
 	}
 }
@@ -148,6 +145,25 @@ void get_supply_voltage(const ComType com, const GetSupplyVoltage *data) {
 	BA->send_blocking_with_timeout(&gsvr, sizeof(GetSupplyVoltageReturn), com);
 }
 
+void set_clock_frequency(const ComType com, const SetClockFrequency *data) {
+	if(data->frequency > 2000000) {
+		BC->clock_delay = 250;
+	} else if (data->frequency < 10000) {
+		BC->clock_delay = 50000;
+	} else {
+		BC->clock_delay = 1000000000/(data->frequency*2);
+	}
+}
+
+void get_clock_frequency(const ComType com, const GetClockFrequency *data) {
+	GetClockFrequencyReturn gcfr;
+	gcfr.header         = data->header;
+	gcfr.header.length  = sizeof(GetClockFrequencyReturn);
+	gcfr.frequency      = 1000000000/(BC->clock_delay*2);
+
+	BA->send_blocking_with_timeout(&gcfr, sizeof(GetClockFrequencyReturn), com);
+}
+
 void invocation(const ComType com, const uint8_t *data) {
 	switch(((MessageHeader*)data)->fid) {
 		case FID_SET_RGB_VALUES: {
@@ -172,6 +188,16 @@ void invocation(const ComType com, const uint8_t *data) {
 
 		case FID_GET_SUPPLY_VOLTAGE: {
 			get_supply_voltage(com, (GetSupplyVoltage*)data);
+			return;
+		}
+
+		case FID_SET_CLOCK_FREQUENCY: {
+			set_clock_frequency(com, (SetClockFrequency*)data);
+			return;
+		}
+
+		case FID_GET_CLOCK_FREQUENCY: {
+			get_clock_frequency(com, (GetClockFrequency*)data);
 			return;
 		}
 
@@ -222,6 +248,7 @@ void constructor(void) {
 	BC->frame_set_counter = 0;
 	BC->frame_rendered = false;
 	BC->frame_length = 0;
+	BC->clock_delay = 300;
 
 	reconfigure_bcs();
 }
@@ -260,7 +287,6 @@ void tick(const uint8_t tick_type) {
 				if(BC->frame_length > 0) {
 					BC->frame_rendered = true;
 				}
-				BC->frame_length_callback = BC->frame_length;
 			}
 			return;
 		}
@@ -293,7 +319,7 @@ void tick(const uint8_t tick_type) {
 		if(BC->frame_rendered) {
 			FrameRendered fr;
 			BA->com_make_default_header(&fr, BS->uid, sizeof(FrameRendered), FID_FRAME_RENDERED);
-			fr.length = BC->frame_length_callback;
+			fr.length = BC->frame_length;
 
 			BA->send_blocking_with_timeout(&fr,
 										   sizeof(FrameRendered),
