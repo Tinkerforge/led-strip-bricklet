@@ -11,10 +11,10 @@ type
   private
     ipcon: TIPConnection;
     ledStrip: TBrickletLEDStrip;
-    r: array[0..15] of Byte;
-    g: array[0..15] of Byte;
-    b: array[0..15] of Byte;
-    rIndex: Integer;
+    r: array [0..15] of byte;
+    g: array [0..15] of byte;
+    b: array [0..15] of byte;
+    rIndex: integer;
   public
     procedure FrameRenderedCB(sender: TBrickletLEDStrip; const length: word);
     procedure Execute;
