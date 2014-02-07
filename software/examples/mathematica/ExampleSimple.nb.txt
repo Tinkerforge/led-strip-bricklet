@@ -1,0 +1,22 @@
+Needs["NETLink`"]
+LoadNETAssembly["Tinkerforge",NotebookDirectory[]<>"../../.."]
+
+host="localhost"
+port=4223
+uid="jEE"(* Change to your UID *)
+
+(* Create IPConnection and device object *)
+ipcon=NETNew["Tinkerforge.IPConnection"]
+ls=NETNew["Tinkerforge.BrickletLEDStrip",uid,ipcon]
+ipcon@Connect[host,port]
+
+(* Set first 10 LEDs to green *)
+r={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}
+g={255,255,255,255,255,255,255,255,255,255,0,0,0,0,0,0}
+b={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}
+ls@SetRGBValues[0,10,r,g,b]
+
+(* Clean up *)
+ipcon@Disconnect[]
+ReleaseNETObject[ls]
+ReleaseNETObject[ipcon]
