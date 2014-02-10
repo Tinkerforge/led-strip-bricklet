@@ -5,7 +5,7 @@ use Tinkerforge::BrickletLEDStrip;
 
 use constant HOST => 'localhost';
 use constant PORT => 4223;
-use constant UID => 'oud'; # Change to your UID
+use constant UID => 'jEE'; # Change to your UID
 
 use constant NUM_LEDS => 16;
 
@@ -23,13 +23,10 @@ sub cb_frame_rendered
 {
     my ($length) = @_;
 
-    if ($r_index == NUM_LEDS)
+    @{$b}[$r_index] = 0;
+    if ($r_index == NUM_LEDS-1)
     {
         $r_index = 0;
-
-        $r = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-        $g = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-        $b = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
     }
     else
     {
