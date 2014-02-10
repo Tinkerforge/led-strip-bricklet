@@ -14,8 +14,8 @@ our $g = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 our $b = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 our $r_index = 0;
 
-my $ipcon = IPConnection->new(); # Create IP connection
-our $led_strip = BrickletLEDStrip->new(&UID, $ipcon); # Create device object
+my $ipcon = Tinkerforge::IPConnection->new(); # Create IP connection
+our $led_strip = Tinkerforge::BrickletLEDStrip->new(&UID, $ipcon); # Create device object
 
 # Frame rendered callback, is called when a new frame was rendered
 # We increase the index of one blue LED with every frame
