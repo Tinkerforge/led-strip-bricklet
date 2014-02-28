@@ -1,31 +1,32 @@
 <!DOCTYPE html>
 <html>
-	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-	<head>
-		<title>Tinkerforge | JavaScript Example</title>
-	</head>
-	<body>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <head>
+        <title>Tinkerforge | JavaScript Example</title>
+    </head>
+    <body>
         <div style="text-align:center;">
-		    <h1>LED Strip Bricklet Callback Example</h1>
-		    <p>
-			    <input value="localhost" id="host" type="text" size="20">:
-			    <input value="4280" id="port" type="text" size="5">,
-			    <input value="uid" id="uid" type="text" size="5">
-			    <input value="Start Example" id="start" type="button" onclick="startExample();">
-		    </p>
-		    <p>
-			    <textarea id="text" cols="80" rows="24" style="resize:none;">Press "Start Example" to begin ...</textarea>
-		    </p>
+            <h1>LED Strip Bricklet Callback Example</h1>
+            <p>
+                <input value="localhost" id="host" type="text" size="20">:
+                <input value="4280" id="port" type="text" size="5">,
+                <input value="uid" id="uid" type="text" size="5">
+                <input value="Start Example" id="start" type="button" onclick="startExample();">
+            </p>
+            <p>
+                <textarea id="text" cols="80" rows="24" style="resize:none;"
+                          >Press "Start Example" to begin ...</textarea>
+            </p>
         <div>
-		<script src="./Tinkerforge.js" type='text/javascript'></script>
-		<script type='text/javascript'>
+        <script src="./Tinkerforge.js" type='text/javascript'></script>
+        <script type='text/javascript'>
             var ipcon;
             var textArea = document.getElementById("text");
-			function startExample() {
+            function startExample() {
                 textArea.value = "";
-				var HOST = document.getElementById("host").value;
-				var PORT = parseInt(document.getElementById("port").value);
-				var UID	= document.getElementById("uid").value;
+                var HOST = document.getElementById("host").value;
+                var PORT = parseInt(document.getElementById("port").value);
+                var UID = document.getElementById("uid").value;
                 if(ipcon !== undefined) {
                     ipcon.disconnect();
                 }
@@ -34,27 +35,27 @@
                 var g = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
                 var b = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
                 var rIndex = 0;
-                ipcon = new Tinkerforge.IPConnection();// Create IP connection
-                var ls = new Tinkerforge.BrickletLEDStrip(UID, ipcon);// Create device object
+                ipcon = new Tinkerforge.IPConnection(); // Create IP connection
+                var ls = new Tinkerforge.BrickletLEDStrip(UID, ipcon); // Create device object
                 ipcon.connect(HOST, PORT,
                     function(error) {
-                        textArea.value += 'Error: '+error+ '\n';        
+                        textArea.value += 'Error: '+error+ '\n';
                     }
-                );// Connect to brickd
-
+                ); // Connect to brickd
                 // Don't use device before ipcon is connected
+
                 ipcon.on(Tinkerforge.IPConnection.CALLBACK_CONNECTED,
                     function(connectReason) {
-                        //Set frame duration to 50ms (20 frames per second)
-                            ls.setFrameDuration(50);
-                        //Set initial rgb values to get started
-                            ls.setRGBValues(0, NUM_LEDS, r, g, b);
+                        // Set frame duration to 50ms (20 frames per second)
+                        ls.setFrameDuration(50);
+                        // Set initial rgb values to get started
+                        ls.setRGBValues(0, NUM_LEDS, r, g, b);
                     }
                 );
                 // Register frame rendered callback
                 ls.on(Tinkerforge.BrickletLEDStrip.CALLBACK_FRAME_RENDERED,
-                    //Frame rendered callback, is called when a new frame was rendered
-                    //We increase the index of one blue LED with every frame
+                    // Frame rendered callback, is called when a new frame was rendered
+                    // We increase the index of one blue LED with every frame
                     function(len) {
                         b[rIndex] = 0;
                         if(rIndex === NUM_LEDS-1) {
@@ -64,12 +65,11 @@
                             rIndex += 1;
                         }
                         b[rIndex] = 255;
-                        //Set new data for next render cycle
+                        // Set new data for next render cycle
                         ls.setRGBValues(0, NUM_LEDS, r, g, b)
                     }
                 );
-			}
-		</script>
-	</body>
+            }
+        </script>
+    </body>
 </html>
-
