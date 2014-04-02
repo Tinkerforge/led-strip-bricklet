@@ -24,6 +24,7 @@ sub cb_frame_rendered
     my ($length) = @_;
 
     @{$b}[$r_index] = 0;
+
     if ($r_index == NUM_LEDS-1)
     {
         $r_index = 0;
@@ -32,6 +33,7 @@ sub cb_frame_rendered
     {
         $r_index += 1;
     }
+
     @{$b}[$r_index] = 255;
 
     # Set new data for next render cycle
@@ -50,7 +52,7 @@ $led_strip->register_callback($led_strip->CALLBACK_FRAME_RENDERED, 'cb_frame_ren
 # Set initial rgb values to get started
 $led_strip->set_rgb_values(0, NUM_LEDS, $r, $g, $b);
 
-print "\nPress any key to exit...\n";
+print "Press any key to exit...\n";
 <STDIN>;
 $ipcon->disconnect();
 
