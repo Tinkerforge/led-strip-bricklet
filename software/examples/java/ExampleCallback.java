@@ -2,8 +2,8 @@ import com.tinkerforge.BrickletLEDStrip;
 import com.tinkerforge.IPConnection;
 
 public class ExampleCallback {
-	private static final String host = "localhost";
-	private static final int port = 4223;
+	private static final String HOST = "localhost";
+	private static final int PORT = 4223;
 	private static final String UID = "XYZ"; // Change to your UID
 	private static final int NUM_LEDS = 16;
 	private static int rIndex = 0;
@@ -17,7 +17,7 @@ public class ExampleCallback {
 		IPConnection ipcon = new IPConnection(); // Create IP connection
 		final BrickletLEDStrip ledStrip = new BrickletLEDStrip(UID, ipcon); // Create device object
 
-		ipcon.connect(host, port); // Connect to brickd
+		ipcon.connect(HOST, PORT); // Connect to brickd
 		// Don't use device before ipcon is connected
 
 		// Frame rendered callback, is called when a new frame was rendered
