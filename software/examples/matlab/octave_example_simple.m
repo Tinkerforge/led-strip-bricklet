@@ -17,6 +17,6 @@ function octave_example_simple
     b = [0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0];
     led_strip.setRGBValues(0, 10, r, g, b);
 
-    input("\nPress any key to exit...\n", "s");
+    input("Press any key to exit...\n", "s");
     ipcon.disconnect();
 end

@@ -7,7 +7,6 @@ function matlab_example_simple
     UID = 'jHb'; % Change to your UID
 
     ipcon = IPConnection(); % Create IP connection
-    global led_strip;
     led_strip = BrickletLEDStrip(UID, ipcon); % Create device object
 
     ipcon.connect(HOST, PORT); % Connect to brickd
@@ -19,6 +18,6 @@ function matlab_example_simple
     b = [0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0];
     led_strip.setRGBValues(0, 10, r, g, b);
 
-    input('\nPress any key to exit...\n', 's');
+    input('Press any key to exit...\n', 's');
     ipcon.disconnect();
 end
