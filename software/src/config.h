@@ -1,5 +1,5 @@
 /* led-strip-bricklet
- * Copyright (C) 2013 Olaf Lüke <olaf@tinkerforge.com>
+ * Copyright (C) 2013-2014 Olaf Lüke <olaf@tinkerforge.com>
  *
  * config.h: LED Strip Bricklet specific configuration
  *
@@ -31,7 +31,7 @@
 
 #define BRICKLET_FIRMWARE_VERSION_MAJOR 2
 #define BRICKLET_FIRMWARE_VERSION_MINOR 0
-#define BRICKLET_FIRMWARE_VERSION_REVISION 1
+#define BRICKLET_FIRMWARE_VERSION_REVISION 2
 
 #define BRICKLET_HARDWARE_VERSION_MAJOR 1
 #define BRICKLET_HARDWARE_VERSION_MINOR 0
@@ -47,7 +47,6 @@
 #define PIN_LED_SUPPLY (BS->pin1_ad)
 #define PIN_SPI_CKI    (BS->pin2_da)
 #define PIN_SPI_SDI    (BS->pin3_pwm)
-#define PIN_SPI_SS     (BS->pin4_io)
 
 #define BRICKLET_NO_OFFSET
 #define INVOCATION_IN_BRICKLET_CODE
@@ -66,7 +65,7 @@ typedef struct {
 	int8_t rgb_bc_diff;
 	uint8_t rgb_length;
 	uint8_t bcs;
-	bool frame_rendered;
+	uint8_t options;
 } BrickContext;
 
 #endif

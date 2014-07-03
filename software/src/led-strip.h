@@ -1,5 +1,5 @@
 /* led-strip-bricklet
- * Copyright (C) 2013 Olaf Lüke <olaf@tinkerforge.com>
+ * Copyright (C) 2013-2014 Olaf Lüke <olaf@tinkerforge.com>
  *
  * led-strip.h: Implementation of LED Strip Bricklet messages
  *
@@ -30,6 +30,17 @@
 #define RGB_LENGTH 80
 #define RGB_VALUE_SIZE 16
 
+#define TYPE_WS2801 0
+#define TYPE_WS2811 1
+#define TYPE_WS2812 2
+
+#define OPTION_TYPE_MASK      (3 << 1)
+
+#define OPTION_FRAME_RENDERED (1 << 0)
+#define OPTION_TYPE_WS2801    (TYPE_WS2801 << 1)
+#define OPTION_TYPE_WS2811    (TYPE_WS2811 << 1)
+#define OPTION_TYPE_WS2812    (TYPE_WS2812 << 1)
+
 #define FID_SET_RGB_VALUES      1
 #define FID_GET_RGB_VALUES      2
 #define FID_SET_FRAME_DURATION  3
@@ -38,6 +49,8 @@
 #define FID_FRAME_RENDERED      6
 #define FID_SET_CLOCK_FREQUENCY 7
 #define FID_GET_CLOCK_FREQUENCY 8
+#define FID_SET_CHIP_TYPE       9
+#define FID_GET_CHIP_TYPE       10
 
 typedef struct {
 	uint8_t r[RGB_LENGTH];
@@ -109,6 +122,20 @@ typedef struct {
 	uint32_t frequency;
 } __attribute__((__packed__)) GetClockFrequencyReturn;
 
+typedef struct {
+	MessageHeader header;
+	uint16_t chip;
+} __attribute__((__packed__)) SetChipType;
+
+typedef struct {
+	MessageHeader header;
+} __attribute__((__packed__)) GetChipType;
+
+typedef struct {
+	MessageHeader header;
+	uint16_t chip;
+} __attribute__((__packed__)) GetChipTypeReturn;
+
 void set_rgb_values(const ComType com, const SetRGBValues *data);
 void get_rgb_values(const ComType com, const GetRGBValues *data);
 void set_frame_duration(const ComType com, const SetFrameDuration *data);
@@ -116,8 +143,12 @@ void get_frame_duration(const ComType com, const GetFrameDuration *data);
 void get_supply_voltage(const ComType com, const GetSupplyVoltage *data);
 void set_clock_frequency(const ComType com, const SetClockFrequency *data);
 void get_clock_frequency(const ComType com, const GetClockFrequency *data);
+void set_chip_type(const ComType com, const SetChipType *data);
+void get_chip_type(const ComType com, const GetChipType *data);
 
-void spibb_write_byte(const uint8_t value);
+void bb_write_byte_ws2801(const uint8_t value);
+void bb_write_byte_ws2811(const uint8_t value);
+void bb_write_byte_ws2812(const uint8_t value);
 void set_rgb_by_global_index(uint16_t index, uint8_t r, uint8_t g, uint8_t b);
 void get_rgb_from_global_index(uint16_t index, uint8_t *r, uint8_t *g, uint8_t *b);
 

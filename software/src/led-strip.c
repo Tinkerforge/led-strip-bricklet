@@ -1,5 +1,5 @@
 /* led-strip-bricklet
- * Copyright (C) 2013 Olaf Lüke <olaf@tinkerforge.com>
+ * Copyright (C) 2013-2014 Olaf Lüke <olaf@tinkerforge.com>
  *
  * led-strip.c: Implementation of LED Strip Bricklet messages
  *
@@ -28,7 +28,51 @@
 #include "brickletlib/bricklet_simple.h"
 #include "config.h"
 
-void spibb_write_byte(const uint8_t value) {
+#define NOP10() do{ __NOP(); __NOP(); __NOP(); __NOP(); __NOP(); __NOP(); __NOP(); __NOP(); __NOP(); __NOP(); }while(0)
+#define NOP9()  do{ __NOP(); __NOP(); __NOP(); __NOP(); __NOP(); __NOP(); __NOP(); __NOP(); __NOP(); }while(0)
+#define NOP8()  do{ __NOP(); __NOP(); __NOP(); __NOP(); __NOP(); __NOP(); __NOP(); __NOP(); }while(0)
+#define NOP7()  do{ __NOP(); __NOP(); __NOP(); __NOP(); __NOP(); __NOP(); __NOP(); }while(0)
+#define NOP6()  do{ __NOP(); __NOP(); __NOP(); __NOP(); __NOP(); __NOP(); }while(0)
+#define NOP5()  do{ __NOP(); __NOP(); __NOP(); __NOP(); __NOP(); }while(0)
+#define NOP4()  do{ __NOP(); __NOP(); __NOP(); __NOP(); }while(0)
+#define NOP3()  do{ __NOP(); __NOP(); __NOP(); }while(0)
+#define NOP2()  do{ __NOP(); __NOP(); }while(0)
+#define NOP1()  do{ __NOP(); }while(0)
+
+void bb_write_byte_ws2812(const uint8_t value) {
+	for(int8_t i = 7; i >= 0; i--) {
+		if((value >> i) & 1) {
+			PIN_SPI_SDI.pio->PIO_CODR = PIN_SPI_SDI.mask;
+			SLEEP_NS(700);
+			PIN_SPI_SDI.pio->PIO_SODR = PIN_SPI_SDI.mask;
+			SLEEP_NS(600);
+		} else {
+			PIN_SPI_SDI.pio->PIO_CODR = PIN_SPI_SDI.mask;
+			SLEEP_NS(350);
+			PIN_SPI_SDI.pio->PIO_SODR = PIN_SPI_SDI.mask;
+			SLEEP_NS(800);
+		}
+	}
+}
+
+
+void bb_write_byte_ws2811(const uint8_t value) {
+	for(int8_t i = 7; i >= 0; i--) {
+		if((value >> i) & 1) {
+			PIN_SPI_SDI.pio->PIO_CODR = PIN_SPI_SDI.mask;
+			SLEEP_NS(1200);
+			PIN_SPI_SDI.pio->PIO_SODR = PIN_SPI_SDI.mask;
+			SLEEP_NS(1300);
+		} else {
+			PIN_SPI_SDI.pio->PIO_CODR = PIN_SPI_SDI.mask;
+			SLEEP_NS(500);
+			PIN_SPI_SDI.pio->PIO_SODR = PIN_SPI_SDI.mask;
+			SLEEP_NS(2000);
+		}
+	}
+}
+
+void bb_write_byte_ws2801(const uint8_t value) {
 	for(int8_t i = 7; i >= 0; i--) {
 		if((value >> i) & 1) {
 			PIN_SPI_SDI.pio->PIO_CODR = PIN_SPI_SDI.mask;
@@ -164,6 +208,37 @@ void get_clock_frequency(const ComType com, const GetClockFrequency *data) {
 	BA->send_blocking_with_timeout(&gcfr, sizeof(GetClockFrequencyReturn), com);
 }
 
+void set_chip_type(const ComType com, const SetChipType *data) {
+	if(data->chip != 2801 && data->chip != 2811 && data->chip != 2812) {
+		BA->com_return_error(data, sizeof(MessageHeader), MESSAGE_ERROR_CODE_INVALID_PARAMETER, com);
+		return;
+	}
+
+	switch(data->chip) {
+		case 2801: BC->options = (BC->options & (~OPTION_TYPE_MASK)) | OPTION_TYPE_WS2801; break;
+		case 2811: BC->options = (BC->options & (~OPTION_TYPE_MASK)) | OPTION_TYPE_WS2811; break;
+		case 2812: BC->options = (BC->options & (~OPTION_TYPE_MASK)) | OPTION_TYPE_WS2812; break;
+		default: break;
+	}
+
+	BA->com_return_setter(com, data);
+}
+
+void get_chip_type(const ComType com, const GetChipType *data) {
+	GetChipTypeReturn gctr;
+	gctr.header         = data->header;
+	gctr.header.length  = sizeof(GetChipTypeReturn);
+
+	switch(BC->options & OPTION_TYPE_MASK) {
+		case OPTION_TYPE_WS2801: gctr.chip = 2801; break;
+		case OPTION_TYPE_WS2811: gctr.chip = 2811; break;
+		case OPTION_TYPE_WS2812: gctr.chip = 2812; break;
+		default: break;
+	}
+
+	BA->send_blocking_with_timeout(&gctr, sizeof(GetChipTypeReturn), com);
+}
+
 void invocation(const ComType com, const uint8_t *data) {
 	switch(((MessageHeader*)data)->fid) {
 		case FID_SET_RGB_VALUES: {
@@ -201,6 +276,16 @@ void invocation(const ComType com, const uint8_t *data) {
 			return;
 		}
 
+		case FID_SET_CHIP_TYPE: {
+			set_chip_type(com, (SetChipType*)data);
+			return;
+		}
+
+		case FID_GET_CHIP_TYPE: {
+			get_chip_type(com, (GetChipType*)data);
+			return;
+		}
+
 		default: {
 			BA->com_return_error(data, sizeof(MessageHeader), MESSAGE_ERROR_CODE_NOT_SUPPORTED, com);
 			break;
@@ -225,10 +310,6 @@ void constructor(void) {
 	_Static_assert(sizeof(BrickContext) <= BRICKLET_CONTEXT_MAX_SIZE, "BrickContext too big");
 	adc_channel_enable(BS->adc_channel);
 
-	PIN_SPI_SS.type = PIO_OUTPUT_1;
-	PIN_SPI_SS.attribute = PIO_DEFAULT;
-	BA->PIO_Configure(&PIN_SPI_SS, 1);
-
 	PIN_SPI_CKI.type = PIO_OUTPUT_0;
 	PIN_SPI_CKI.attribute = PIO_DEFAULT;
 	BA->PIO_Configure(&PIN_SPI_CKI, 1);
@@ -246,10 +327,10 @@ void constructor(void) {
 	BC->frame_duration = 100;
 	BC->frame_counter = 0;
 	BC->frame_set_counter = 0;
-	BC->frame_rendered = false;
 	BC->frame_length = 0;
 	BC->clock_delay = 300;
 
+	BC->options = 0; // Frame rendered = false, Chip Type = WS2801
 	reconfigure_bcs();
 }
 
@@ -285,7 +366,7 @@ void tick(const uint8_t tick_type) {
 			BC->frame_set_counter--;
 			if(BC->frame_set_counter == 0) {
 				if(BC->frame_length > 0) {
-					BC->frame_rendered = true;
+					BC->options |= OPTION_FRAME_RENDERED;
 				}
 			}
 			return;
@@ -297,26 +378,56 @@ void tick(const uint8_t tick_type) {
 			BC->frame_set_counter = 2;
 			if(BC->frame_length > 0) {
 				__disable_irq();
-				PIN_SPI_SS.pio->PIO_CODR = PIN_SPI_SS.mask;
-				for(uint16_t i = 0; i < BC->frame_length; i++) {
-					uint8_t r = 0;
-					uint8_t g = 0;
-					uint8_t b = 0;
+				switch(BC->options & OPTION_TYPE_MASK) {
+					case OPTION_TYPE_WS2801: {
+						for(uint16_t i = 0; i < BC->frame_length; i++) {
+							uint8_t r = 0;
+							uint8_t g = 0;
+							uint8_t b = 0;
 
-					get_rgb_from_global_index(i, &r, &g, &b);
-					spibb_write_byte(b);
-					spibb_write_byte(g);
-					spibb_write_byte(r);
+							get_rgb_from_global_index(i, &r, &g, &b);
+							bb_write_byte_ws2801(b);
+							bb_write_byte_ws2801(g);
+							bb_write_byte_ws2801(r);
+						}
+						break;
+					}
+
+					case OPTION_TYPE_WS2811: {
+						for(uint16_t i = 0; i < BC->frame_length; i++) {
+							uint8_t r = 0;
+							uint8_t g = 0;
+							uint8_t b = 0;
+
+							get_rgb_from_global_index(i, &r, &g, &b);
+							bb_write_byte_ws2811(b);
+							bb_write_byte_ws2811(g);
+							bb_write_byte_ws2811(r);
+						}
+						break;
+					}
+
+					case OPTION_TYPE_WS2812: {
+						for(uint16_t i = 0; i < BC->frame_length; i++) {
+							uint8_t r = 0;
+							uint8_t g = 0;
+							uint8_t b = 0;
+
+							get_rgb_from_global_index(i, &r, &g, &b);
+							bb_write_byte_ws2812(b);
+							bb_write_byte_ws2812(g);
+							bb_write_byte_ws2812(r);
+						}
+						break;
+					}
 				}
-				PIN_SPI_SS.pio->PIO_SODR = PIN_SPI_SS.mask;
 				__enable_irq();
 			}
 		}
-
 	}
 
 	if(tick_type & TICK_TASK_TYPE_MESSAGE) {
-		if(BC->frame_rendered) {
+		if(BC->options & OPTION_FRAME_RENDERED) {
 			FrameRendered fr;
 			BA->com_make_default_header(&fr, BS->uid, sizeof(FrameRendered), FID_FRAME_RENDERED);
 			fr.length = BC->frame_length;
@@ -325,7 +436,7 @@ void tick(const uint8_t tick_type) {
 										   sizeof(FrameRendered),
 										   *BA->com_current);
 
-			BC->frame_rendered = false;
+			BC->options = BC->options & (~OPTION_FRAME_RENDERED);
 		}
 	}
 }
