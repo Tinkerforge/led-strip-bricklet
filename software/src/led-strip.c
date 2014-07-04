@@ -39,36 +39,207 @@
 #define NOP2()  do{ __NOP(); __NOP(); }while(0)
 #define NOP1()  do{ __NOP(); }while(0)
 
+// "PUSH {R0}\n" -> 2 cycles
+// "MOV R0, %0\n" -> 1 cycles
+// "SUBS R0, #1\n" -> 1 cycles
+// "BNE.N 1b\n" -> 2 cycles if taken, 1 otherwise
+// "POP {R0}\n" -> 2 cycles
+#define SLEEP_THREE_CYCLES(x) \
+	do { \
+		__ASM volatile ( \
+			"PUSH {R0}\n" \
+			"MOV R0, %0\n" \
+			"1:\n" \
+			"SUBS R0, #1\n" \
+			"BNE.N 1b\n" \
+			"POP {R0}\n" \
+			:: "r" (x) \
+		); \
+	} while(0)
+
+
+/*   --- Cycle number is calculated with the following Python script ---
+CYCLE_NS = 15.63
+CYCLE_HEAD = 3
+CYCLE_LOOP = 3
+CYCLE_LOOP_END = 2
+CYCLE_TAIL = 2
+CYCLE_IF = 3
+
+def ns_to_cycle(n):
+    cycles = n/15.63
+    loop = cycles/3.0
+    value = loop - (CYCLE_HEAD + CYCLE_TAIL + CYCLE_IF - (CYCLE_LOOP - CYCLE_LOOP_END))/3.0
+    print n, value
+
+ns_to_cycle(350)
+ns_to_cycle(500)
+ns_to_cycle(600)
+ns_to_cycle(700)
+ns_to_cycle(800)
+ns_to_cycle(1200)
+ns_to_cycle(1300)
+ns_to_cycle(2000)
+  ------------------------------------------------------------------------  */
+
+// Function call between write_byte calls take 4-6 cycles,
+// depending on pipeline status
+
+#define FUNCTION_CALL_CYCLES 6
+
+// 700ns -> 600ns
+#define WS2812_ONE() do{ \
+	PIN_SPI_SDI.pio->PIO_CODR = PIN_SPI_SDI.mask; \
+	SLEEP_THREE_CYCLES(13); \
+	PIN_SPI_SDI.pio->PIO_SODR = PIN_SPI_SDI.mask; \
+	SLEEP_THREE_CYCLES(10); \
+}while(0);
+
+// 350ns -> 800ns
+#define WS2812_ZERO() do{ \
+	PIN_SPI_SDI.pio->PIO_CODR = PIN_SPI_SDI.mask; \
+	SLEEP_THREE_CYCLES(5); \
+	PIN_SPI_SDI.pio->PIO_SODR = PIN_SPI_SDI.mask; \
+	SLEEP_THREE_CYCLES(15); \
+}while(0);
+
+
+// 700ns -> 600ns includes next function call
+#define WS2812_ONE_LAST() do{ \
+	PIN_SPI_SDI.pio->PIO_CODR = PIN_SPI_SDI.mask; \
+	SLEEP_THREE_CYCLES(13); \
+	PIN_SPI_SDI.pio->PIO_SODR = PIN_SPI_SDI.mask; \
+	SLEEP_THREE_CYCLES(10-FUNCTION_CALL_CYCLES); \
+}while(0);
+
+// 350ns -> 800ns includes next function call
+#define WS2812_ZERO_LAST() do{ \
+	PIN_SPI_SDI.pio->PIO_CODR = PIN_SPI_SDI.mask; \
+	SLEEP_THREE_CYCLES(5); \
+	PIN_SPI_SDI.pio->PIO_SODR = PIN_SPI_SDI.mask; \
+	SLEEP_THREE_CYCLES(15-FUNCTION_CALL_CYCLES); \
+}while(0);
+
+
+// 1200ns -> 1300ns
+#define WS2811_ONE() do{ \
+	PIN_SPI_SDI.pio->PIO_CODR = PIN_SPI_SDI.mask; \
+	SLEEP_THREE_CYCLES(23); \
+	PIN_SPI_SDI.pio->PIO_SODR = PIN_SPI_SDI.mask; \
+	SLEEP_THREE_CYCLES(25); \
+}while(0);
+
+// 500ns -> 2000ns
+#define WS2811_ZERO() do{ \
+	PIN_SPI_SDI.pio->PIO_CODR = PIN_SPI_SDI.mask; \
+	SLEEP_THREE_CYCLES(8); \
+	PIN_SPI_SDI.pio->PIO_SODR = PIN_SPI_SDI.mask; \
+	SLEEP_THREE_CYCLES(40); \
+}while(0);
+
+
+// 1200ns -> 1300ns includes next function call
+#define WS2811_ONE_LAST() do{ \
+	PIN_SPI_SDI.pio->PIO_CODR = PIN_SPI_SDI.mask; \
+	SLEEP_THREE_CYCLES(23); \
+	PIN_SPI_SDI.pio->PIO_SODR = PIN_SPI_SDI.mask; \
+	SLEEP_THREE_CYCLES(25-FUNCTION_CALL_CYCLES); \
+}while(0);
+
+// 500ns -> 2000ns includes next function call
+#define WS2811_ZERO_LAST() do{ \
+	PIN_SPI_SDI.pio->PIO_CODR = PIN_SPI_SDI.mask; \
+	SLEEP_THREE_CYCLES(8); \
+	PIN_SPI_SDI.pio->PIO_SODR = PIN_SPI_SDI.mask; \
+	SLEEP_THREE_CYCLES(40-FUNCTION_CALL_CYCLES); \
+}while(0);
+
+
+// We unroll the loops ourself to be completely sure that
+// GCC can't do any unpredictable optimizations or similar
 void bb_write_byte_ws2812(const uint8_t value) {
-	for(int8_t i = 7; i >= 0; i--) {
-		if((value >> i) & 1) {
-			PIN_SPI_SDI.pio->PIO_CODR = PIN_SPI_SDI.mask;
-			SLEEP_NS(700);
-			PIN_SPI_SDI.pio->PIO_SODR = PIN_SPI_SDI.mask;
-			SLEEP_NS(600);
-		} else {
-			PIN_SPI_SDI.pio->PIO_CODR = PIN_SPI_SDI.mask;
-			SLEEP_NS(350);
-			PIN_SPI_SDI.pio->PIO_SODR = PIN_SPI_SDI.mask;
-			SLEEP_NS(800);
-		}
+	if((value >> 7) & 1) {
+		WS2812_ONE();
+	} else {
+		WS2812_ZERO();
+	}
+	if((value >> 6) & 1) {
+		WS2812_ONE();
+	} else {
+		WS2812_ZERO();
+	}
+	if((value >> 5) & 1) {
+		WS2812_ONE();
+	} else {
+		WS2812_ZERO();
+	}
+	if((value >> 4) & 1) {
+		WS2812_ONE();
+	} else {
+		WS2812_ZERO();
+	}
+	if((value >> 3) & 1) {
+		WS2812_ONE();
+	} else {
+		WS2812_ZERO();
+	}
+	if((value >> 2) & 1) {
+		WS2812_ONE();
+	} else {
+		WS2812_ZERO();
+	}
+	if((value >> 1) & 1) {
+		WS2812_ONE();
+	} else {
+		WS2812_ZERO();
+	}
+	if((value >> 0) & 1) {
+		WS2812_ONE_LAST();
+	} else {
+		WS2812_ZERO_LAST();
 	}
 }
 
-
 void bb_write_byte_ws2811(const uint8_t value) {
-	for(int8_t i = 7; i >= 0; i--) {
-		if((value >> i) & 1) {
-			PIN_SPI_SDI.pio->PIO_CODR = PIN_SPI_SDI.mask;
-			SLEEP_NS(1200);
-			PIN_SPI_SDI.pio->PIO_SODR = PIN_SPI_SDI.mask;
-			SLEEP_NS(1300);
-		} else {
-			PIN_SPI_SDI.pio->PIO_CODR = PIN_SPI_SDI.mask;
-			SLEEP_NS(500);
-			PIN_SPI_SDI.pio->PIO_SODR = PIN_SPI_SDI.mask;
-			SLEEP_NS(2000);
-		}
+	if((value >> 7) & 1) {
+		WS2811_ONE();
+	} else {
+		WS2811_ZERO();
+	}
+	if((value >> 6) & 1) {
+		WS2811_ONE();
+	} else {
+		WS2811_ZERO();
+	}
+	if((value >> 5) & 1) {
+		WS2811_ONE();
+	} else {
+		WS2811_ZERO();
+	}
+	if((value >> 4) & 1) {
+		WS2811_ONE();
+	} else {
+		WS2811_ZERO();
+	}
+	if((value >> 3) & 1) {
+		WS2811_ONE();
+	} else {
+		WS2811_ZERO();
+	}
+	if((value >> 2) & 1) {
+		WS2811_ONE();
+	} else {
+		WS2811_ZERO();
+	}
+	if((value >> 1) & 1) {
+		WS2811_ONE();
+	} else {
+		WS2811_ZERO();
+	}
+	if((value >> 0) & 1) {
+		WS2811_ONE_LAST();
+	} else {
+		WS2811_ZERO_LAST();
 	}
 }
 
