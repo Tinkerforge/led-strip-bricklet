@@ -1,2 +1,4 @@
 2.0.0: Initial version
 2.0.1: Add Get/SetClockFrequency function
+2.0.2: Add support for WS2811 and WS2812
+2.0.3: Timing for WS2811 and WS2812 now excactly as specified in the datasheet
