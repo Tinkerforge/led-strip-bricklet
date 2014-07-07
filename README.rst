@@ -1,4 +1,4 @@
-LED STRIP Bricklet
+LED Strip Bricklet
 ==================
 
 This repository contains the firmware source code and the hardware design
