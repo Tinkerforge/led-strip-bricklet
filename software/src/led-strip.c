@@ -59,6 +59,7 @@
 
 
 /*   --- Cycle number is calculated with the following Python script ---
+ *       !!! This is currently not used anymore !!!
 CYCLE_NS = 15.63
 CYCLE_HEAD = 3
 CYCLE_LOOP = 3
@@ -77,174 +78,33 @@ ns_to_cycle(500)
 ns_to_cycle(600)
 ns_to_cycle(700)
 ns_to_cycle(800)
+ns_to_cycle(900)
 ns_to_cycle(1200)
 ns_to_cycle(1300)
 ns_to_cycle(2000)
   ------------------------------------------------------------------------  */
 
-// Function call between write_byte calls take 4-6 cycles,
-// depending on pipeline status
-
-#define FUNCTION_CALL_CYCLES 6
-
-// 700ns -> 600ns
-#define WS2812_ONE() do{ \
-	PIN_SPI_SDI.pio->PIO_CODR = PIN_SPI_SDI.mask; \
-	SLEEP_THREE_CYCLES(13); \
-	PIN_SPI_SDI.pio->PIO_SODR = PIN_SPI_SDI.mask; \
-	SLEEP_THREE_CYCLES(10); \
-}while(0);
-
-// 350ns -> 800ns
-#define WS2812_ZERO() do{ \
-	PIN_SPI_SDI.pio->PIO_CODR = PIN_SPI_SDI.mask; \
-	SLEEP_THREE_CYCLES(5); \
-	PIN_SPI_SDI.pio->PIO_SODR = PIN_SPI_SDI.mask; \
-	SLEEP_THREE_CYCLES(15); \
-}while(0);
-
-
-// 700ns -> 600ns includes next function call
-#define WS2812_ONE_LAST() do{ \
-	PIN_SPI_SDI.pio->PIO_CODR = PIN_SPI_SDI.mask; \
-	SLEEP_THREE_CYCLES(13); \
-	PIN_SPI_SDI.pio->PIO_SODR = PIN_SPI_SDI.mask; \
-	SLEEP_THREE_CYCLES(10-FUNCTION_CALL_CYCLES); \
-}while(0);
-
-// 350ns -> 800ns includes next function call
-#define WS2812_ZERO_LAST() do{ \
-	PIN_SPI_SDI.pio->PIO_CODR = PIN_SPI_SDI.mask; \
-	SLEEP_THREE_CYCLES(5); \
-	PIN_SPI_SDI.pio->PIO_SODR = PIN_SPI_SDI.mask; \
-	SLEEP_THREE_CYCLES(15-FUNCTION_CALL_CYCLES); \
-}while(0);
-
-
-// 1200ns -> 1300ns
-#define WS2811_ONE() do{ \
-	PIN_SPI_SDI.pio->PIO_CODR = PIN_SPI_SDI.mask; \
-	SLEEP_THREE_CYCLES(23); \
-	PIN_SPI_SDI.pio->PIO_SODR = PIN_SPI_SDI.mask; \
-	SLEEP_THREE_CYCLES(25); \
-}while(0);
-
-// 500ns -> 2000ns
-#define WS2811_ZERO() do{ \
-	PIN_SPI_SDI.pio->PIO_CODR = PIN_SPI_SDI.mask; \
-	SLEEP_THREE_CYCLES(8); \
-	PIN_SPI_SDI.pio->PIO_SODR = PIN_SPI_SDI.mask; \
-	SLEEP_THREE_CYCLES(40); \
-}while(0);
-
-
-// 1200ns -> 1300ns includes next function call
-#define WS2811_ONE_LAST() do{ \
-	PIN_SPI_SDI.pio->PIO_CODR = PIN_SPI_SDI.mask; \
-	SLEEP_THREE_CYCLES(23); \
-	PIN_SPI_SDI.pio->PIO_SODR = PIN_SPI_SDI.mask; \
-	SLEEP_THREE_CYCLES(25-FUNCTION_CALL_CYCLES); \
-}while(0);
-
-// 500ns -> 2000ns includes next function call
-#define WS2811_ZERO_LAST() do{ \
-	PIN_SPI_SDI.pio->PIO_CODR = PIN_SPI_SDI.mask; \
-	SLEEP_THREE_CYCLES(8); \
-	PIN_SPI_SDI.pio->PIO_SODR = PIN_SPI_SDI.mask; \
-	SLEEP_THREE_CYCLES(40-FUNCTION_CALL_CYCLES); \
-}while(0);
-
-
-// We unroll the loops ourself to be completely sure that
-// GCC can't do any unpredictable optimizations or similar
-void bb_write_byte_ws2812(const uint8_t value) {
-	if((value >> 7) & 1) {
-		WS2812_ONE();
-	} else {
-		WS2812_ZERO();
-	}
-	if((value >> 6) & 1) {
-		WS2812_ONE();
-	} else {
-		WS2812_ZERO();
-	}
-	if((value >> 5) & 1) {
-		WS2812_ONE();
-	} else {
-		WS2812_ZERO();
-	}
-	if((value >> 4) & 1) {
-		WS2812_ONE();
-	} else {
-		WS2812_ZERO();
-	}
-	if((value >> 3) & 1) {
-		WS2812_ONE();
-	} else {
-		WS2812_ZERO();
-	}
-	if((value >> 2) & 1) {
-		WS2812_ONE();
-	} else {
-		WS2812_ZERO();
-	}
-	if((value >> 1) & 1) {
-		WS2812_ONE();
-	} else {
-		WS2812_ZERO();
-	}
-	if((value >> 0) & 1) {
-		WS2812_ONE_LAST();
-	} else {
-		WS2812_ZERO_LAST();
+// We sleep about 250us low phase and 1250us high phase (found by trial and error)
+// This fits nearly exactly in the middle of the margins found by
+// Tim: http://cpldcpu.wordpress.com/2014/01/14/light_ws2812-library-v2-0-part-i-understanding-the-ws2812/
+// It does not correspond to the datasheet!
+void bb_write_3byte_ws2812(const uint32_t value) {
+	for(int8_t i = 23; i >= 0; i--) {
+		if((value >> i) & 1) {
+			PIN_SPI_SDI.pio->PIO_CODR = PIN_SPI_SDI.mask;
+			SLEEP_THREE_CYCLES(23);
+			PIN_SPI_SDI.pio->PIO_SODR = PIN_SPI_SDI.mask;
+		} else {
+			PIN_SPI_SDI.pio->PIO_CODR = PIN_SPI_SDI.mask;
+			SLEEP_THREE_CYCLES(3);
+			PIN_SPI_SDI.pio->PIO_SODR = PIN_SPI_SDI.mask;
+			SLEEP_THREE_CYCLES(17);
+		}
 	}
 }
 
-void bb_write_byte_ws2811(const uint8_t value) {
-	if((value >> 7) & 1) {
-		WS2811_ONE();
-	} else {
-		WS2811_ZERO();
-	}
-	if((value >> 6) & 1) {
-		WS2811_ONE();
-	} else {
-		WS2811_ZERO();
-	}
-	if((value >> 5) & 1) {
-		WS2811_ONE();
-	} else {
-		WS2811_ZERO();
-	}
-	if((value >> 4) & 1) {
-		WS2811_ONE();
-	} else {
-		WS2811_ZERO();
-	}
-	if((value >> 3) & 1) {
-		WS2811_ONE();
-	} else {
-		WS2811_ZERO();
-	}
-	if((value >> 2) & 1) {
-		WS2811_ONE();
-	} else {
-		WS2811_ZERO();
-	}
-	if((value >> 1) & 1) {
-		WS2811_ONE();
-	} else {
-		WS2811_ZERO();
-	}
-	if((value >> 0) & 1) {
-		WS2811_ONE_LAST();
-	} else {
-		WS2811_ZERO_LAST();
-	}
-}
-
-void bb_write_byte_ws2801(const uint8_t value) {
-	for(int8_t i = 7; i >= 0; i--) {
+void bb_write_3byte_ws2801(const uint32_t value) {
+	for(int8_t i = 23; i >= 0; i--) {
 		if((value >> i) & 1) {
 			PIN_SPI_SDI.pio->PIO_CODR = PIN_SPI_SDI.mask;
 		} else {
@@ -276,9 +136,18 @@ void set_rgb_by_global_index(uint16_t index, uint8_t r, uint8_t g, uint8_t b) {
 
 	BrickContext *bc = BCO_DIRECT(bc_num + BC->rgb_bc_diff);
 
-	bc->rgb.r[index] = r;
-	bc->rgb.g[index] = g;
-	bc->rgb.b[index] = b;
+	if(bc->rgb.r[index] != r) {
+		bc->rgb.r[index] = r;
+		BC->options |= OPTION_DATA_CHANGED;
+	}
+	if(bc->rgb.g[index] != g) {
+		bc->rgb.g[index] = g;
+		BC->options |= OPTION_DATA_CHANGED;
+	}
+	if(bc->rgb.b[index] != b) {
+		bc->rgb.b[index] = b;
+		BC->options |= OPTION_DATA_CHANGED;
+	}
 }
 
 void get_rgb_from_global_index(uint16_t index, uint8_t *r, uint8_t *g, uint8_t *b) {
@@ -386,9 +255,9 @@ void set_chip_type(const ComType com, const SetChipType *data) {
 	}
 
 	switch(data->chip) {
-		case 2801: BC->options = (BC->options & (~OPTION_TYPE_MASK)) | OPTION_TYPE_WS2801; break;
-		case 2811: BC->options = (BC->options & (~OPTION_TYPE_MASK)) | OPTION_TYPE_WS2811; break;
-		case 2812: BC->options = (BC->options & (~OPTION_TYPE_MASK)) | OPTION_TYPE_WS2812; break;
+		case 2801:  BC->options = (BC->options & (~OPTION_TYPE_MASK)) | OPTION_TYPE_WS2801;  break;
+		case 2811:  BC->options = (BC->options & (~OPTION_TYPE_MASK)) | OPTION_TYPE_WS2811;  break;
+		case 2812:  BC->options = (BC->options & (~OPTION_TYPE_MASK)) | OPTION_TYPE_WS2812;  break;
 		default: break;
 	}
 
@@ -401,9 +270,9 @@ void get_chip_type(const ComType com, const GetChipType *data) {
 	gctr.header.length  = sizeof(GetChipTypeReturn);
 
 	switch(BC->options & OPTION_TYPE_MASK) {
-		case OPTION_TYPE_WS2801: gctr.chip = 2801; break;
-		case OPTION_TYPE_WS2811: gctr.chip = 2811; break;
-		case OPTION_TYPE_WS2812: gctr.chip = 2812; break;
+		case OPTION_TYPE_WS2801:  gctr.chip = 2801;  break;
+		case OPTION_TYPE_WS2811:  gctr.chip = 2811;  break;
+		case OPTION_TYPE_WS2812:  gctr.chip = 2812;  break;
 		default: break;
 	}
 
@@ -505,22 +374,6 @@ void constructor(void) {
 	reconfigure_bcs();
 }
 
-void destructor(void) {
-	PIN_SPI_CKI.type = PIO_INPUT;
-	PIN_SPI_CKI.attribute = PIO_PULLUP;
-	BA->PIO_Configure(&PIN_SPI_CKI, 1);
-
-	PIN_SPI_SDI.type = PIO_INPUT;
-	PIN_SPI_SDI.attribute = PIO_PULLUP;
-	BA->PIO_Configure(&PIN_SPI_SDI, 1);
-
-	PIN_LED_SUPPLY.type = PIO_INPUT;
-	PIN_LED_SUPPLY.attribute = PIO_PULLUP;
-	BA->PIO_Configure(&PIN_LED_SUPPLY, 1);
-
-	adc_channel_disable(BS->adc_channel);
-}
-
 void tick(const uint8_t tick_type) {
 	if(tick_type & TICK_TASK_TYPE_CALCULATION) {
 		if(BC->bcs == 0) {
@@ -548,51 +401,37 @@ void tick(const uint8_t tick_type) {
 			BC->frame_counter = 0;
 			BC->frame_set_counter = 2;
 			if(BC->frame_length > 0) {
-				__disable_irq();
-				switch(BC->options & OPTION_TYPE_MASK) {
-					case OPTION_TYPE_WS2801: {
-						for(uint16_t i = 0; i < BC->frame_length; i++) {
-							uint8_t r = 0;
-							uint8_t g = 0;
-							uint8_t b = 0;
+				if(BC->options & OPTION_DATA_CHANGED) {
+					BC->options = BC->options & (~OPTION_DATA_CHANGED);
+					__disable_irq();
+					switch(BC->options & OPTION_TYPE_MASK) {
+						case OPTION_TYPE_WS2801: {
+							for(uint16_t i = 0; i < BC->frame_length; i++) {
+								uint8_t r = 0;
+								uint8_t g = 0;
+								uint8_t b = 0;
 
-							get_rgb_from_global_index(i, &r, &g, &b);
-							bb_write_byte_ws2801(b);
-							bb_write_byte_ws2801(g);
-							bb_write_byte_ws2801(r);
+								get_rgb_from_global_index(i, &r, &g, &b);
+								bb_write_3byte_ws2801((b << 16) | (g << 8) | r);
+							}
+							break;
 						}
-						break;
-					}
 
-					case OPTION_TYPE_WS2811: {
-						for(uint16_t i = 0; i < BC->frame_length; i++) {
-							uint8_t r = 0;
-							uint8_t g = 0;
-							uint8_t b = 0;
+						case OPTION_TYPE_WS2811:
+						case OPTION_TYPE_WS2812: {
+							for(uint16_t i = 0; i < BC->frame_length; i++) {
+								uint8_t r = 0;
+								uint8_t g = 0;
+								uint8_t b = 0;
 
-							get_rgb_from_global_index(i, &r, &g, &b);
-							bb_write_byte_ws2811(b);
-							bb_write_byte_ws2811(g);
-							bb_write_byte_ws2811(r);
+								get_rgb_from_global_index(i, &r, &g, &b);
+								bb_write_3byte_ws2812((b << 16) | (g << 8) | r);
+							}
+							break;
 						}
-						break;
 					}
-
-					case OPTION_TYPE_WS2812: {
-						for(uint16_t i = 0; i < BC->frame_length; i++) {
-							uint8_t r = 0;
-							uint8_t g = 0;
-							uint8_t b = 0;
-
-							get_rgb_from_global_index(i, &r, &g, &b);
-							bb_write_byte_ws2812(b);
-							bb_write_byte_ws2812(g);
-							bb_write_byte_ws2812(r);
-						}
-						break;
-					}
+					__enable_irq();
 				}
-				__enable_irq();
 			}
 		}
 	}
