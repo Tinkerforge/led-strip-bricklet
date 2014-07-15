@@ -47,7 +47,7 @@ public class ExampleCallback {
 		// Set initial rgb values to get started
 		ledStrip.setRGBValues(0, (short)NUM_LEDS, r, g, b);
 
-		System.console().readLine("Press key to exit\n");
+		System.out.println("Press key to exit"); System.in.read();
 		ipcon.disconnect();
 	}
 }

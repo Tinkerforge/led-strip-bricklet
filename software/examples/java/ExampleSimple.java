@@ -21,7 +21,7 @@ public class ExampleSimple {
 		short[] b = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 		ledStrip.setRGBValues(0, (short)10, r, g, b);
 
-		System.console().readLine("Press key to exit\n");
+		System.out.println("Press key to exit"); System.in.read();
 		ipcon.disconnect();
 	}
 }
