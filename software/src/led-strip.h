@@ -41,6 +41,7 @@
 #define OPTION_TYPE_WS2811    (TYPE_WS2811 << 1)
 #define OPTION_TYPE_WS2812    (TYPE_WS2812 << 1)
 #define OPTION_DATA_CHANGED   (1 << 3)
+#define OPTION_DATA_ONE_MORE  (1 << 4)
 
 #define FID_SET_RGB_VALUES      1
 #define FID_GET_RGB_VALUES      2

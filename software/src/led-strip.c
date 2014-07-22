@@ -136,18 +136,12 @@ void set_rgb_by_global_index(uint16_t index, uint8_t r, uint8_t g, uint8_t b) {
 
 	BrickContext *bc = BCO_DIRECT(bc_num + BC->rgb_bc_diff);
 
-	if(bc->rgb.r[index] != r) {
-		bc->rgb.r[index] = r;
-		BC->options |= OPTION_DATA_CHANGED;
-	}
-	if(bc->rgb.g[index] != g) {
-		bc->rgb.g[index] = g;
-		BC->options |= OPTION_DATA_CHANGED;
-	}
-	if(bc->rgb.b[index] != b) {
-		bc->rgb.b[index] = b;
-		BC->options |= OPTION_DATA_CHANGED;
-	}
+	bc->rgb.r[index] = r;
+	bc->rgb.g[index] = g;
+	bc->rgb.b[index] = b;
+
+	BC->options |= OPTION_DATA_CHANGED;
+	BC->options |= OPTION_DATA_ONE_MORE;
 }
 
 void get_rgb_from_global_index(uint16_t index, uint8_t *r, uint8_t *g, uint8_t *b) {
@@ -375,9 +369,13 @@ void constructor(void) {
 }
 
 void tick(const uint8_t tick_type) {
+	if(BC->frame_duration == 0) {
+		return;
+	}
+
 	if(tick_type & TICK_TASK_TYPE_CALCULATION) {
 		if(BC->bcs == 0) {
-			for(uint8_t i = 0; i < 4; i++) {
+			for(uint8_t i = 0; i < BC->rgb_length; i++) {
 				if(BSO_DIRECT(i + BC->rgb_bc_diff)->device_identifier == 0) {
 					BC->bcs |= 1 << i;
 					BC->frame_max_length += RGB_LENGTH;
@@ -402,7 +400,11 @@ void tick(const uint8_t tick_type) {
 			BC->frame_set_counter = 2;
 			if(BC->frame_length > 0) {
 				if(BC->options & OPTION_DATA_CHANGED) {
-					BC->options = BC->options & (~OPTION_DATA_CHANGED);
+					if(BC->options & OPTION_DATA_ONE_MORE) {
+						BC->options = BC->options & (~OPTION_DATA_ONE_MORE);
+					} else {
+						BC->options = BC->options & (~OPTION_DATA_CHANGED);
+					}
 					__disable_irq();
 					switch(BC->options & OPTION_TYPE_MASK) {
 						case OPTION_TYPE_WS2801: {
