@@ -3,3 +3,6 @@
 2.0.2: Add support for WS2811 and WS2812
 2.0.3: Timing for WS2811 and WS2812 now excactly as specified in the datasheet
 2.0.4: Use timings from "Tims blog" instead of timings from datasheet (http://cpldcpu.wordpress.com/2014/01/14/light_ws2812-library-v2-0-part-i-understanding-the-ws2812/)
+2.0.5: * Frame duration of 0 now means that no more frames shall be set
+       * Set RGB values at least two times to make sure that they are really written
+       * Fix possible overflow if Brick with two Bricklet connectors is used
