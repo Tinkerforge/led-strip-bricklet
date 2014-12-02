@@ -45,8 +45,8 @@ class Example
 		// Set initial rgb values to get started
 		ledStrip.SetRGBValues(0, NUM_LEDS, r, g, b);
 
-		System.Console.WriteLine("Press key to exit");
-		System.Console.ReadKey();
+		System.Console.WriteLine("Press enter to exit");
+		System.Console.ReadLine();
 		ipcon.Disconnect();
 	}
 }
