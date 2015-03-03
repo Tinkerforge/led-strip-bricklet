@@ -19,9 +19,12 @@ const
   HOST = 'localhost';
   PORT = 4223;
   UID = 'XYZ'; { Change to your UID }
-  r: array [0..15] of byte = (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
-  g: array [0..15] of byte = (255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 0, 0, 0, 0, 0, 0);
-  b: array [0..15] of byte = (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+  r: {$ifdef FPC}array [0..15] of byte{$else}TArray0To15OfUInt8{$endif} =
+     (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+  g: {$ifdef FPC}array [0..15] of byte{$else}TArray0To15OfUInt8{$endif} =
+     (255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 0, 0, 0, 0, 0, 0);
+  b: {$ifdef FPC}array [0..15] of byte{$else}TArray0To15OfUInt8{$endif} =
+     (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 
 var
   e: TExample;

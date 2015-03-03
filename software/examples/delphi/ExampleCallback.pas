@@ -11,9 +11,9 @@ type
   private
     ipcon: TIPConnection;
     ledStrip: TBrickletLEDStrip;
-    r: array [0..15] of byte;
-    g: array [0..15] of byte;
-    b: array [0..15] of byte;
+    r: {$ifdef FPC}array [0..15] of byte{$else}TArray0To15OfUInt8{$endif};
+    g: {$ifdef FPC}array [0..15] of byte{$else}TArray0To15OfUInt8{$endif};
+    b: {$ifdef FPC}array [0..15] of byte{$else}TArray0To15OfUInt8{$endif};
     rIndex: integer;
   public
     procedure FrameRenderedCB(sender: TBrickletLEDStrip; const length: word);
