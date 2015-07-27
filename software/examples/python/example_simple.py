@@ -10,7 +10,7 @@ from tinkerforge.bricklet_led_strip import LEDStrip
 
 if __name__ == "__main__":
     ipcon = IPConnection() # Create IP connection
-    leds = LEDStrip(UID, ipcon) # Create device object
+    ls = LEDStrip(UID, ipcon) # Create device object
 
     ipcon.connect(HOST, PORT) # Connect to brickd
     # Don't use device before ipcon is connected
@@ -19,7 +19,7 @@ if __name__ == "__main__":
     r = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
     g = [255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 0, 0, 0, 0, 0, 0]
     b = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-    leds.set_rgb_values(0, 10, r, g, b)
+    ls.set_rgb_values(0, 10, r, g, b)
 
     raw_input('Press key to exit\n') # Use input() in Python 3
     ipcon.disconnect()

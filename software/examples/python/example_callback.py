@@ -17,7 +17,7 @@ from tinkerforge.bricklet_led_strip import LEDStrip
 
 # Frame rendered callback, is called when a new frame was rendered
 # We increase the index of one blue LED with every frame
-def cb_frame_rendered(leds, length):
+def cb_frame_rendered(ls, length):
     global r_index
     b[r_index] = 0
     if r_index == NUM_LEDS-1:
@@ -28,24 +28,24 @@ def cb_frame_rendered(leds, length):
     b[r_index] = 255
 
     # Set new data for next render cycle
-    leds.set_rgb_values(0, NUM_LEDS, r, g, b)
+    ls.set_rgb_values(0, NUM_LEDS, r, g, b)
 
 if __name__ == "__main__":
     ipcon = IPConnection() # Create IP connection
-    leds = LEDStrip(UID, ipcon) # Create device object
+    ls = LEDStrip(UID, ipcon) # Create device object
 
     ipcon.connect(HOST, PORT) # Connect to brickd
     # Don't use device before ipcon is connected
 
     # Set frame duration to 50ms (20 frames per second)
-    leds.set_frame_duration(50)
+    ls.set_frame_duration(50)
 
     # Register frame rendered callback to function cb_frame_rendered
-    leds.register_callback(leds.CALLBACK_FRAME_RENDERED,
-                           lambda x: cb_frame_rendered(leds, x))
+    ls.register_callback(ls.CALLBACK_FRAME_RENDERED,
+                         lambda x: cb_frame_rendered(ls, x))
 
     # Set initial rgb values to get started
-    leds.set_rgb_values(0, NUM_LEDS, r, g, b)
+    ls.set_rgb_values(0, NUM_LEDS, r, g, b)
 
     raw_input('Press key to exit\n') # Use input() in Python 3
     ipcon.disconnect()

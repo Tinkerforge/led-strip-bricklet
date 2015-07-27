@@ -30,19 +30,19 @@ class Example
 	static void Main()
 	{
 		IPConnection ipcon = new IPConnection(); // Create IP connection
-		BrickletLEDStrip leds = new BrickletLEDStrip(UID, ipcon); // Create device object
+		BrickletLEDStrip ls = new BrickletLEDStrip(UID, ipcon); // Create device object
 
 		ipcon.Connect(HOST, PORT); // Connect to brickd
 		// Don't use device before ipcon is connected
 
 		// Set frame duration to 50ms (20 frames per second)
-		leds.SetFrameDuration(50);
+		ls.SetFrameDuration(50);
 
 		// Register frame rendered callback to function FrameRenderedCB
-		leds.FrameRendered += FrameRenderedCB;
+		ls.FrameRendered += FrameRenderedCB;
 
 		// Set initial rgb values to get started
-		leds.SetRGBValues(0, NUM_LEDS, r, g, b);
+		ls.SetRGBValues(0, NUM_LEDS, r, g, b);
 
 		System.Console.WriteLine("Press enter to exit");
 		System.Console.ReadLine();

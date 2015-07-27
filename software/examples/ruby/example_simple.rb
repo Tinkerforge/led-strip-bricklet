@@ -11,7 +11,7 @@ PORT = 4223
 UID = 'XYZ' # Change to your UID
 
 ipcon = IPConnection.new # Create IP connection
-leds = BrickletLEDStrip.new UID, ipcon # Create device object
+ls = BrickletLEDStrip.new UID, ipcon # Create device object
 
 ipcon.connect HOST, PORT # Connect to brickd
 # Don't use device before ipcon is connected
@@ -20,7 +20,7 @@ ipcon.connect HOST, PORT # Connect to brickd
 r = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 g = [255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 0, 0, 0, 0, 0, 0]
 b = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ,0 ,0]
-leds.set_rgb_values 0, 10, r, g, b
+ls.set_rgb_values 0, 10, r, g, b
 
 puts 'Press key to exit'
 $stdin.gets
