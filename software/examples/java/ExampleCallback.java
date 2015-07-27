@@ -1,5 +1,5 @@
-import com.tinkerforge.BrickletLEDStrip;
 import com.tinkerforge.IPConnection;
+import com.tinkerforge.BrickletLEDStrip;
 
 public class ExampleCallback {
 	private static final String HOST = "localhost";
@@ -10,19 +10,19 @@ public class ExampleCallback {
 	private static short[] r = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 	private static short[] g = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 	private static short[] b = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-	
+
 	// Note: To make the example code cleaner we do not handle exceptions. Exceptions you
 	//       might normally want to catch are described in the documentation
 	public static void main(String args[]) throws Exception {
 		IPConnection ipcon = new IPConnection(); // Create IP connection
-		final BrickletLEDStrip ledStrip = new BrickletLEDStrip(UID, ipcon); // Create device object
+		BrickletLEDStrip leds = new BrickletLEDStrip(UID, ipcon); // Create device object
 
 		ipcon.connect(HOST, PORT); // Connect to brickd
 		// Don't use device before ipcon is connected
 
 		// Frame rendered callback, is called when a new frame was rendered
 		// We increase the index of one blue LED with every frame
-		ledStrip.addFrameRenderedListener(new BrickletLEDStrip.FrameRenderedListener() {
+		leds.addFrameRenderedListener(new BrickletLEDStrip.FrameRenderedListener() {
 			public void frameRendered(int length) {
 				b[rIndex] = 0;
 				if(rIndex == NUM_LEDS-1) {
@@ -34,7 +34,7 @@ public class ExampleCallback {
 
 				// Set new data for next render cycle
 				try {
-					ledStrip.setRGBValues(0, (short)NUM_LEDS, r, g, b);
+					leds.setRGBValues(0, (short)NUM_LEDS, r, g, b);
 				} catch(Exception e) {
 					System.out.println(e);
 				}
@@ -42,10 +42,10 @@ public class ExampleCallback {
 		});
 
 		// Set frame duration to 50ms (20 frames per second)
-		ledStrip.setFrameDuration(50);
+		leds.setFrameDuration(50);
 
 		// Set initial rgb values to get started
-		ledStrip.setRGBValues(0, (short)NUM_LEDS, r, g, b);
+		leds.setRGBValues(0, (short)NUM_LEDS, r, g, b);
 
 		System.out.println("Press key to exit"); System.in.read();
 		ipcon.disconnect();

@@ -19,7 +19,7 @@ uint8_t r_index = 0;
 void cb_frame_rendered(uint16_t length, void *user_data) {
 	(void)length; // avoid unused parameter warning
 
-	LEDStrip *led_strip = (LEDStrip *)user_data;
+	LEDStrip *leds = (LEDStrip *)user_data;
 
 	b[r_index] = 0;
 	if(r_index == NUM_LEDS-1) {
@@ -30,7 +30,7 @@ void cb_frame_rendered(uint16_t length, void *user_data) {
 	b[r_index] = 255;
 
 	// Set new data for next render cycle
-	led_strip_set_rgb_values(led_strip, 0, NUM_LEDS, r, g, b);
+	led_strip_set_rgb_values(leds, 0, NUM_LEDS, r, g, b);
 }
 
 int main() {
@@ -39,8 +39,8 @@ int main() {
 	ipcon_create(&ipcon);
 
 	// Create device object
-	LEDStrip led_strip;
-	led_strip_create(&led_strip, UID, &ipcon); 
+	LEDStrip leds;
+	led_strip_create(&leds, UID, &ipcon);
 
 	// Connect to brickd
 	if(ipcon_connect(&ipcon, HOST, PORT) < 0) {
@@ -50,16 +50,16 @@ int main() {
 	// Don't use device before ipcon is connected
 	
 	// Set frame duration to 50ms (20 frames per second)
-	led_strip_set_frame_duration(&led_strip, 50);
+	led_strip_set_frame_duration(&leds, 50);
 
 	// Register frame rendered callback to function cb_frame_rendered
-	led_strip_register_callback(&led_strip,
+	led_strip_register_callback(&leds,
 	                            LED_STRIP_CALLBACK_FRAME_RENDERED,
 	                            (void *)cb_frame_rendered,
 	                            (void *)&led_strip);
 
 	// Set initial rgb values to get started
-	led_strip_set_rgb_values(&led_strip, 0, NUM_LEDS, r, g, b);
+	led_strip_set_rgb_values(&leds, 0, NUM_LEDS, r, g, b);
 
 	printf("Press key to exit\n");
 	getchar();

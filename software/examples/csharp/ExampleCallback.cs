@@ -11,7 +11,6 @@ class Example
 	private static byte[] b = new byte[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 	private static int rIndex = 0;
 
-
 	// Frame rendered callback, is called when a new frame was rendered
 	// We increase the index of one blue LED with every frame
 	static void FrameRenderedCB(BrickletLEDStrip sender, int length)
@@ -28,22 +27,22 @@ class Example
 		sender.SetRGBValues(0, NUM_LEDS, r, g, b);
 	}
 
-	static void Main() 
+	static void Main()
 	{
 		IPConnection ipcon = new IPConnection(); // Create IP connection
-		BrickletLEDStrip ledStrip = new BrickletLEDStrip(UID, ipcon); // Create device object
+		BrickletLEDStrip leds = new BrickletLEDStrip(UID, ipcon); // Create device object
 
 		ipcon.Connect(HOST, PORT); // Connect to brickd
 		// Don't use device before ipcon is connected
 
 		// Set frame duration to 50ms (20 frames per second)
-		ledStrip.SetFrameDuration(50);
+		leds.SetFrameDuration(50);
 
 		// Register frame rendered callback to function FrameRenderedCB
-		ledStrip.FrameRendered += FrameRenderedCB;
+		leds.FrameRendered += FrameRenderedCB;
 
 		// Set initial rgb values to get started
-		ledStrip.SetRGBValues(0, NUM_LEDS, r, g, b);
+		leds.SetRGBValues(0, NUM_LEDS, r, g, b);
 
 		System.Console.WriteLine("Press enter to exit");
 		System.Console.ReadLine();

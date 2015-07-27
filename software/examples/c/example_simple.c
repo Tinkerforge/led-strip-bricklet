@@ -13,8 +13,8 @@ int main() {
 	ipcon_create(&ipcon);
 
 	// Create device object
-	LEDStrip led_strip;
-	led_strip_create(&led_strip, UID, &ipcon); 
+	LEDStrip leds;
+	led_strip_create(&leds, UID, &ipcon);
 
 	// Connect to brickd
 	if(ipcon_connect(&ipcon, HOST, PORT) < 0) {
@@ -27,7 +27,7 @@ int main() {
 	uint8_t r[16] = {0};
 	uint8_t g[16] = {255, 255, 255, 255, 255, 255, 255, 255, 255, 255};
 	uint8_t b[16] = {0};
-	led_strip_set_rgb_values(&led_strip, 0, 10, r, g, b);
+	led_strip_set_rgb_values(&leds, 0, 10, r, g, b);
 
 	printf("Press key to exit\n");
 	getchar();

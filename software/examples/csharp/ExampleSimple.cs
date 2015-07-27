@@ -6,10 +6,10 @@ class Example
 	private static int PORT = 4223;
 	private static string UID = "XYZ"; // Change to your UID
 
-	static void Main() 
+	static void Main()
 	{
 		IPConnection ipcon = new IPConnection(); // Create IP connection
-		BrickletLEDStrip ledStrip = new BrickletLEDStrip(UID, ipcon); // Create device object
+		BrickletLEDStrip leds = new BrickletLEDStrip(UID, ipcon); // Create device object
 
 		ipcon.Connect(HOST, PORT); // Connect to brickd
 		// Don't use device before ipcon is connected
@@ -18,7 +18,7 @@ class Example
 		byte[] r = new byte[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 		byte[] g = new byte[] {255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 0, 0, 0, 0, 0, 0};
 		byte[] b = new byte[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ,0 ,0};
-		ledStrip.SetRGBValues(0, 10, r, g, b);
+		leds.SetRGBValues(0, 10, r, g, b);
 
 		System.Console.WriteLine("Press enter to exit");
 		System.Console.ReadLine();
