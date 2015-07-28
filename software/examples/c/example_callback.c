@@ -56,7 +56,7 @@ int main() {
 	led_strip_register_callback(&ls,
 	                            LED_STRIP_CALLBACK_FRAME_RENDERED,
 	                            (void *)cb_frame_rendered,
-	                            (void *)&led_strip);
+	                            (void *)&ls);
 
 	// Set initial rgb values to get started
 	led_strip_set_rgb_values(&ls, 0, NUM_LEDS, r, g, b);

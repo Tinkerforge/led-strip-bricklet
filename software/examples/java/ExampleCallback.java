@@ -15,7 +15,7 @@ public class ExampleCallback {
 	//       might normally want to catch are described in the documentation
 	public static void main(String args[]) throws Exception {
 		IPConnection ipcon = new IPConnection(); // Create IP connection
-		BrickletLEDStrip ls = new BrickletLEDStrip(UID, ipcon); // Create device object
+		final BrickletLEDStrip ls = new BrickletLEDStrip(UID, ipcon); // Create device object
 
 		ipcon.connect(HOST, PORT); // Connect to brickd
 		// Don't use device before ipcon is connected
