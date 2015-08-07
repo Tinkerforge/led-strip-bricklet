@@ -13,7 +13,7 @@ b = [0]*NUM_LEDS
 r_index = 0
 
 from tinkerforge.ip_connection import IPConnection
-from tinkerforge.bricklet_led_strip import LEDStrip
+from tinkerforge.bricklet_led_strip import BrickletLEDStrip
 
 # Frame rendered callback, is called when a new frame was rendered
 # We increase the index of one blue LED with every frame
@@ -32,7 +32,7 @@ def cb_frame_rendered(ls, length):
 
 if __name__ == "__main__":
     ipcon = IPConnection() # Create IP connection
-    ls = LEDStrip(UID, ipcon) # Create device object
+    ls = BrickletLEDStrip(UID, ipcon) # Create device object
 
     ipcon.connect(HOST, PORT) # Connect to brickd
     # Don't use device before ipcon is connected
