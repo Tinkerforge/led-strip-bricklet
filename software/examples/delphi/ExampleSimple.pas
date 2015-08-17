@@ -10,7 +10,7 @@ type
   TExample = class
   private
     ipcon: TIPConnection;
-    ledStrip: TBrickletLEDStrip;
+    ls: TBrickletLEDStrip;
   public
     procedure Execute;
   end;
@@ -35,14 +35,14 @@ begin
   ipcon := TIPConnection.Create;
 
   { Create device object }
-  ledStrip := TBrickletLEDStrip.Create(UID, ipcon);
+  ls := TBrickletLEDStrip.Create(UID, ipcon);
 
   { Connect to brickd }
   ipcon.Connect(HOST, PORT);
   { Don't use device before ipcon is connected }
 
   { Set first 10 LEDs to green }
-  ledStrip.SetRGBValues(0, 10, r, g, b);
+  ls.SetRGBValues(0, 10, r, g, b);
 
   WriteLn('Press key to exit');
   ReadLn;

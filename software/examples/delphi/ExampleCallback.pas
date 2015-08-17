@@ -10,7 +10,7 @@ type
   TExample = class
   private
     ipcon: TIPConnection;
-    ledStrip: TBrickletLEDStrip;
+    ls: TBrickletLEDStrip;
     r: {$ifdef FPC}array [0..15] of byte{$else}TArray0To15OfUInt8{$endif};
     g: {$ifdef FPC}array [0..15] of byte{$else}TArray0To15OfUInt8{$endif};
     b: {$ifdef FPC}array [0..15] of byte{$else}TArray0To15OfUInt8{$endif};
@@ -52,20 +52,20 @@ begin
   ipcon := TIPConnection.Create;
 
   { Create device object }
-  ledStrip := TBrickletLEDStrip.Create(UID, ipcon);
+  ls := TBrickletLEDStrip.Create(UID, ipcon);
 
   { Connect to brickd }
   ipcon.Connect(HOST, PORT);
   { Don't use device before ipcon is connected }
 
   { Set frame duration to 50ms (20 frames per second) }
-  ledStrip.SetFrameDuration(50);
+  ls.SetFrameDuration(50);
 
   { Register frame rendered callback to function FrameRenderedCB }
-  ledStrip.OnFrameRendered := {$ifdef FPC}@{$endif}FrameRenderedCB;
+  ls.OnFrameRendered := {$ifdef FPC}@{$endif}FrameRenderedCB;
 
   { Set initial rgb values to get started }
-  ledStrip.SetRGBValues(0, NUM_LEDS, r, g, b);
+  ls.SetRGBValues(0, NUM_LEDS, r, g, b);
 
   WriteLn('Press key to exit');
   ReadLn;
