@@ -28,19 +28,19 @@ Module ExampleCallback
 
     Sub Main()
         Dim ipcon As New IPConnection() ' Create IP connection
-        Dim ledStrip As New BrickletLEDStrip(UID, ipcon) ' Create device object
+        Dim ls As New BrickletLEDStrip(UID, ipcon) ' Create device object
 
         ipcon.Connect(HOST, PORT) ' Connect to brickd
         ' Don't use device before ipcon is connected
 
         ' Set frame duration to 50ms (20 frames per second)
-        ledStrip.SetFrameDuration(50)
+        ls.SetFrameDuration(50)
 
         ' Register frame rendered callback to function FrameRenderedCB
-        AddHandler ledStrip.FrameRendered, AddressOf FrameRenderedCB
+        AddHandler ls.FrameRendered, AddressOf FrameRenderedCB
 
         ' Set initial rgb values to get started
-        ledStrip.SetRGBValues(0, NUM_LEDS, r, g, b)
+        ls.SetRGBValues(0, NUM_LEDS, r, g, b)
 
         System.Console.WriteLine("Press key to exit")
         System.Console.ReadLine()
