@@ -16,8 +16,7 @@ our $r_index = 0;
 my $ipcon = Tinkerforge::IPConnection->new(); # Create IP connection
 our $ls = Tinkerforge::BrickletLEDStrip->new(&UID, $ipcon); # Create device object
 
-# Frame rendered callback, is called when a new frame was rendered
-# We increase the index of one blue LED with every frame
+# Use frame rendered callback to move the active LED every frame
 sub cb_frame_rendered
 {
     my ($length) = @_;
@@ -45,12 +44,12 @@ $ipcon->connect(&HOST, &PORT); # Connect to brickd
 # Set frame duration to 50ms (20 frames per second)
 $ls->set_frame_duration(50);
 
-# Register frame rendered callback to function cb_frame_rendered
+# Register frame rendered callback to subroutine cb_frame_rendered
 $ls->register_callback($ls->CALLBACK_FRAME_RENDERED, 'cb_frame_rendered');
 
 # Set initial rgb values to get started
 $ls->set_rgb_values(0, NUM_LEDS, $r, $g, $b);
 
-print "Press any key to exit...\n";
+print "Press key to exit\n";
 <STDIN>;
 $ipcon->disconnect();

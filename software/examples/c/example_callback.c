@@ -6,7 +6,6 @@
 #define HOST "localhost"
 #define PORT 4223
 #define UID "XYZ" // Change to your UID
-
 #define NUM_LEDS 16
 
 uint8_t r[NUM_LEDS] = {0};
@@ -14,12 +13,11 @@ uint8_t g[NUM_LEDS] = {0};
 uint8_t b[NUM_LEDS] = {0};
 uint8_t r_index = 0;
 
-// Frame rendered callback, is called when a new frame was rendered
-// We increase the index of one blue LED with every frame
+// Use frame rendered callback to move the active LED every frame
 void cb_frame_rendered(uint16_t length, void *user_data) {
-	(void)length; // avoid unused parameter warning
-
 	LEDStrip *ls = (LEDStrip *)user_data;
+
+	(void)length; // avoid unused parameter warning
 
 	b[r_index] = 0;
 	if(r_index == NUM_LEDS-1) {
@@ -48,7 +46,7 @@ int main(void) {
 		return 1;
 	}
 	// Don't use device before ipcon is connected
-	
+
 	// Set frame duration to 50ms (20 frames per second)
 	led_strip_set_frame_duration(&ls, 50);
 
@@ -56,7 +54,7 @@ int main(void) {
 	led_strip_register_callback(&ls,
 	                            LED_STRIP_CALLBACK_FRAME_RENDERED,
 	                            (void *)cb_frame_rendered,
-	                            (void *)&ls);
+	                            &ls);
 
 	// Set initial rgb values to get started
 	led_strip_set_rgb_values(&ls, 0, NUM_LEDS, r, g, b);

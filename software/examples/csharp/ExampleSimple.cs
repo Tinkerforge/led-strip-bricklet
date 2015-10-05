@@ -1,3 +1,4 @@
+using System;
 using Tinkerforge;
 
 class Example
@@ -20,8 +21,8 @@ class Example
 		byte[] b = new byte[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ,0 ,0};
 		ls.SetRGBValues(0, 10, r, g, b);
 
-		System.Console.WriteLine("Press enter to exit");
-		System.Console.ReadLine();
+		Console.WriteLine("Press enter to exit");
+		Console.ReadLine();
 		ipcon.Disconnect();
 	}
 }

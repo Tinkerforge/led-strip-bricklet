@@ -29,8 +29,7 @@ const
 var
   e: TExample;
 
-{ Frame rendered callback, is called when a new frame was rendered }
-{ We increase the index of one blue LED with every frame }
+{ Use frame rendered callback to move the active LED every frame }
 procedure TExample.FrameRenderedCB(sender: TBrickletLEDStrip; const length: word);
 begin
   b[rIndex] := 0;
@@ -61,7 +60,7 @@ begin
   { Set frame duration to 50ms (20 frames per second) }
   ls.SetFrameDuration(50);
 
-  { Register frame rendered callback to function FrameRenderedCB }
+  { Register frame rendered callback to procedure FrameRenderedCB }
   ls.OnFrameRendered := {$ifdef FPC}@{$endif}FrameRenderedCB;
 
   { Set initial rgb values to get started }

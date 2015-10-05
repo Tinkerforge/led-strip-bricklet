@@ -16,11 +16,10 @@ $g = array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 $b = array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 $rIndex = 0;
 
-// Frame rendered callback, is called when a new frame was rendered
-// We increase the index of one blue LED with every frame
+// Use frame rendered callback to move the active LED every frame
 function cb_frameRendered($length)
 {
-    global $rIndex, $r, $g, $b, $ledStrip;
+    global $rIndex, $r, $g, $b, $ls;
 
     $b[$rIndex] = 0;
 
@@ -32,23 +31,24 @@ function cb_frameRendered($length)
 
     $b[$rIndex] = 255;
 
-    $ledStrip->setRGBValues(0, NUM_LEDS, $r, $g, $b);
+    // Set new data for next render cycle
+    $ls->setRGBValues(0, NUM_LEDS, $r, $g, $b);
 }
 
 $ipcon = new IPConnection(); // Create IP connection
-$ledStrip = new BrickletLEDStrip(UID, $ipcon); // Create device object
+$ls = new BrickletLEDStrip(UID, $ipcon); // Create device object
 
 $ipcon->connect(HOST, PORT); // Connect to brickd
 // Don't use device before ipcon is connected
 
 // Set frame duration to 50ms (20 frames per second)
-$ledStrip->setFrameDuration(50);
+$ls->setFrameDuration(50);
 
-// Register frame rendered callback to function cb_frame_rendered
-$ledStrip->registerCallback(BrickletLEDStrip::CALLBACK_FRAME_RENDERED, 'cb_frameRendered');
+// Register frame rendered callback to function cb_frameRendered
+$ls->registerCallback(BrickletLEDStrip::CALLBACK_FRAME_RENDERED, 'cb_frameRendered');
 
 // Set initial rgb values to get started
-$ledStrip->setRGBValues(0, NUM_LEDS, $r, $g, $b);
+$ls->setRGBValues(0, NUM_LEDS, $r, $g, $b);
 
 echo "Press ctrl+c to exit\n";
 $ipcon->dispatchCallbacks(-1); // Dispatch callbacks forever

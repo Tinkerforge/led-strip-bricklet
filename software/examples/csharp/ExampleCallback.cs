@@ -1,3 +1,4 @@
+using System;
 using Tinkerforge;
 
 class Example
@@ -11,8 +12,7 @@ class Example
 	private static byte[] b = new byte[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 	private static int rIndex = 0;
 
-	// Frame rendered callback, is called when a new frame was rendered
-	// We increase the index of one blue LED with every frame
+	// Use frame rendered callback to move the active LED every frame
 	static void FrameRenderedCB(BrickletLEDStrip sender, int length)
 	{
 		b[rIndex] = 0;
@@ -44,8 +44,8 @@ class Example
 		// Set initial rgb values to get started
 		ls.SetRGBValues(0, NUM_LEDS, r, g, b);
 
-		System.Console.WriteLine("Press enter to exit");
-		System.Console.ReadLine();
+		Console.WriteLine("Press enter to exit");
+		Console.ReadLine();
 		ipcon.Disconnect();
 	}
 }

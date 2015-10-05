@@ -3,14 +3,14 @@ LoadNETAssembly["Tinkerforge",NotebookDirectory[]<>"../../.."]
 
 host="localhost"
 port=4223
-uid="jEE"(* Change to your UID *)
+uid="XYZ"(*Change to your UID*)
 
-(* Create IPConnection and device object *)
+(*Create IPConnection and device object*)
 ipcon=NETNew["Tinkerforge.IPConnection"]
 ls=NETNew["Tinkerforge.BrickletLEDStrip",uid,ipcon]
 ipcon@Connect[host,port]
 
-(* Set frame duration to 50ms (20 frames per second) *)
+(*Set frame duration to 50ms (20 frames per second)*)
 ls@SetFrameDuration[50]
 
 numLEDs=16
@@ -19,8 +19,7 @@ r={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}
 g={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}
 b={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}
 
-(* Frame rendered callback,is called when a new frame was rendered *)
-(* We increase the index of one blue LED with every frame *)
+(*Use frame rendered callback to move the active LED every frame*)
 FrameRenderedCB[sender_,length_]:=
  Module[{},
   b[[rIndex]]=0;
@@ -38,7 +37,7 @@ ls@SetRGBValues[0,numLEDs,r,g,b]
 
 Input["Click OK to exit"]
 
-(* Clean up *)
+(*Clean up*)
 ipcon@Disconnect[]
 ReleaseNETObject[ls]
 ReleaseNETObject[ipcon]

@@ -11,17 +11,20 @@ public class ExampleCallback {
 	private static short[] g = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 	private static short[] b = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
-	// Note: To make the example code cleaner we do not handle exceptions. Exceptions you
-	//       might normally want to catch are described in the documentation
+	// Note: To make the example code cleaner we do not handle exceptions. Exceptions
+	//       you might normally want to catch are described in the documentation
 	public static void main(String args[]) throws Exception {
 		IPConnection ipcon = new IPConnection(); // Create IP connection
+		// Note: Declare ls as final, so the listener can access it
 		final BrickletLEDStrip ls = new BrickletLEDStrip(UID, ipcon); // Create device object
 
 		ipcon.connect(HOST, PORT); // Connect to brickd
 		// Don't use device before ipcon is connected
 
-		// Frame rendered callback, is called when a new frame was rendered
-		// We increase the index of one blue LED with every frame
+		// Set frame duration to 50ms (20 frames per second)
+		ls.setFrameDuration(50);
+
+		// Use frame rendered callback to move the active LED every frame
 		ls.addFrameRenderedListener(new BrickletLEDStrip.FrameRenderedListener() {
 			public void frameRendered(int length) {
 				b[rIndex] = 0;
@@ -40,9 +43,6 @@ public class ExampleCallback {
 				}
 			}
 		});
-
-		// Set frame duration to 50ms (20 frames per second)
-		ls.setFrameDuration(50);
 
 		// Set initial rgb values to get started
 		ls.setRGBValues(0, (short)NUM_LEDS, r, g, b);

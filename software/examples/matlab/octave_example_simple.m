@@ -1,12 +1,12 @@
 function octave_example_simple()
     more off;
-    
+
     HOST = "localhost";
     PORT = 4223;
-    UID = "jHb"; % Change to your UID
+    UID = "XYZ"; % Change to your UID
 
     ipcon = java_new("com.tinkerforge.IPConnection"); % Create IP connection
-    led_strip = java_new("com.tinkerforge.BrickletLEDStrip", UID, ipcon); % Create device object
+    ls = java_new("com.tinkerforge.BrickletLEDStrip", UID, ipcon); % Create device object
 
     ipcon.connect(HOST, PORT); % Connect to brickd
     % Don't use device before ipcon is connected
@@ -15,8 +15,8 @@ function octave_example_simple()
     r = [0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0];
     g = [255 255 255 255 255 255 255 255 255 255 0 0 0 0 0 0];
     b = [0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0];
-    led_strip.setRGBValues(0, 10, r, g, b);
+    ls.setRGBValues(0, 10, r, g, b);
 
-    input("Press any key to exit...\n", "s");
+    input("Press key to exit\n", "s");
     ipcon.disconnect();
 end

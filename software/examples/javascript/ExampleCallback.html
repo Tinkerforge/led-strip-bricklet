@@ -39,24 +39,24 @@
                 var ls = new Tinkerforge.BrickletLEDStrip(UID, ipcon); // Create device object
                 ipcon.connect(HOST, PORT,
                     function(error) {
-                        textArea.value += 'Error: '+error+ '\n';
+                        textArea.value += 'Error: ' + error + '\n';
                     }
                 ); // Connect to brickd
                 // Don't use device before ipcon is connected
 
                 ipcon.on(Tinkerforge.IPConnection.CALLBACK_CONNECTED,
-                    function(connectReason) {
+                    function (connectReason) {
                         // Set frame duration to 50ms (20 frames per second)
                         ls.setFrameDuration(50);
                         // Set initial rgb values to get started
                         ls.setRGBValues(0, NUM_LEDS, r, g, b);
                     }
                 );
+
                 // Register frame rendered callback
                 ls.on(Tinkerforge.BrickletLEDStrip.CALLBACK_FRAME_RENDERED,
-                    // Frame rendered callback, is called when a new frame was rendered
-                    // We increase the index of one blue LED with every frame
-                    function(len) {
+                    // Use frame rendered callback to move the active LED every frame
+                    function (length) {
                         b[rIndex] = 0;
                         if(rIndex === NUM_LEDS-1) {
                             rIndex = 0;
@@ -65,6 +65,7 @@
                             rIndex += 1;
                         }
                         b[rIndex] = 255;
+
                         // Set new data for next render cycle
                         ls.setRGBValues(0, NUM_LEDS, r, g, b)
                     }

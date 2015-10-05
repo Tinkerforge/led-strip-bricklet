@@ -9,7 +9,6 @@ include Tinkerforge
 HOST = 'localhost'
 PORT = 4223
 UID = 'XYZ' # Change to your UID
-
 NUM_LEDS = 16
 
 r = [0]*NUM_LEDS
@@ -26,19 +25,18 @@ ipcon.connect HOST, PORT # Connect to brickd
 # Set frame duration to 50ms (20 frames per second)
 ls.set_frame_duration 50
 
-# Register frame rendered callback
+# Use frame rendered callback to move the active LED every frame
 ls.register_callback(BrickletLEDStrip::CALLBACK_FRAME_RENDERED) do |length|
-    b[r_index] = 0
-    if(r_index == NUM_LEDS-1)
-        r_index = 0
-    else
-        r_index += 1
-    end
+  b[r_index] = 0
+  if(r_index == NUM_LEDS-1)
+    r_index = 0
+  else
+    r_index += 1
+  end
+  b[r_index] = 255
 
-    b[r_index] = 255
-
-    # Set new data for next render cycle
-    ls.set_rgb_values 0, NUM_LEDS, r, g, b
+  # Set new data for next render cycle
+  ls.set_rgb_values 0, NUM_LEDS, r, g, b
 end
 
 # Set initial rgb values to get started

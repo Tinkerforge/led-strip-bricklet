@@ -1,3 +1,4 @@
+Imports System
 Imports Tinkerforge
 
 Module ExampleCallback
@@ -11,8 +12,7 @@ Module ExampleCallback
     Dim g() As Byte = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
     Dim b() As Byte = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
 
-    ' Frame rendered callback, is called when a new frame was rendered
-    ' We increase the index of one blue LED with every frame
+    ' Use frame rendered callback to move the active LED every frame
     Sub FrameRenderedCB(ByVal sender As BrickletLEDStrip, ByVal length As Integer)
         b(rIndex) = 0
         If rIndex = NUM_LEDS-1 Then
@@ -36,14 +36,14 @@ Module ExampleCallback
         ' Set frame duration to 50ms (20 frames per second)
         ls.SetFrameDuration(50)
 
-        ' Register frame rendered callback to function FrameRenderedCB
+        ' Register frame rendered callback to subroutine FrameRenderedCB
         AddHandler ls.FrameRendered, AddressOf FrameRenderedCB
 
         ' Set initial rgb values to get started
         ls.SetRGBValues(0, NUM_LEDS, r, g, b)
 
-        System.Console.WriteLine("Press key to exit")
-        System.Console.ReadLine()
+        Console.WriteLine("Press key to exit")
+        Console.ReadLine()
         ipcon.Disconnect()
     End Sub
 End Module

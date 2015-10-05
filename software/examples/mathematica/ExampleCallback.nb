@@ -3,10 +3,10 @@
 NotebookFileLineBreakTest
 NotebookFileLineBreakTest
 NotebookDataPosition[         0,          0]
-NotebookDataLength[      8176,        194]
-NotebookOptionsPosition[      7743,        173]
-NotebookOutlinePosition[      8081,        188]
-CellTagsIndexPosition[      8038,        185]
+NotebookDataLength[      7767,        189]
+NotebookOptionsPosition[      7339,        168]
+NotebookOutlinePosition[      7672,        183]
+CellTagsIndexPosition[      7629,        180]
 WindowFrame->Normal*)
 
 (* Beginning of Notebook Content *)
@@ -26,51 +26,51 @@ Cell[BoxData[{
    3.600685362498796*^9}],
 
 Cell[BoxData[{
- RowBox[{"host", "=", "\"\<localhost\>\""}], "\[IndentingNewLine]", 
- RowBox[{"port", "=", "4223"}], "\[IndentingNewLine]", 
+ RowBox[{"host", "=", "\"\<localhost\>\""}], "\n", 
+ RowBox[{"port", "=", "4223"}], "\n", 
  RowBox[{
-  RowBox[{"uid", "=", "\"\<jEE\>\""}], 
-  RowBox[{"(*", " ", 
-   RowBox[{"Change", " ", "to", " ", "your", " ", "UID"}], " ", "*)"}], 
-  "\[IndentingNewLine]", "\[IndentingNewLine]", 
-  RowBox[{"(*", " ", 
+  RowBox[{"uid", "=", "\"\<XYZ\>\""}], 
+  RowBox[{"(*", 
+   RowBox[{"Change", " ", "to", " ", "your", " ", "UID"}], "*)"}], "\n", 
+  "\[IndentingNewLine]", 
+  RowBox[{"(*", 
    RowBox[{
    "Create", " ", "IPConnection", " ", "and", " ", "device", " ", "object"}], 
-   " ", "*)"}]}], "\[IndentingNewLine]", 
+   "*)"}]}], "\[IndentingNewLine]", 
  RowBox[{"ipcon", "=", 
   RowBox[{"NETNew", "[", "\"\<Tinkerforge.IPConnection\>\"", "]"}]}], "\n", 
  RowBox[{"ls", "=", 
   RowBox[{"NETNew", "[", 
    RowBox[{"\"\<Tinkerforge.BrickletLEDStrip\>\"", ",", "uid", ",", "ipcon"}],
-    "]"}]}], "\[IndentingNewLine]", 
+    "]"}]}], "\n", 
  RowBox[{
   RowBox[{"ipcon", "@", 
    RowBox[{"Connect", "[", 
-    RowBox[{"host", ",", "port"}], "]"}]}], "\n", "\n", 
-  RowBox[{"(*", " ", 
+    RowBox[{"host", ",", "port"}], "]"}]}], "\n", "\[IndentingNewLine]", 
+  RowBox[{"(*", 
    RowBox[{
    "Set", " ", "frame", " ", "duration", " ", "to", " ", "50", "ms", " ", 
     RowBox[{"(", 
-     RowBox[{"20", " ", "frames", " ", "per", " ", "second"}], ")"}]}], " ", 
-   "*)"}]}], "\n", 
+     RowBox[{"20", " ", "frames", " ", "per", " ", "second"}], ")"}]}], 
+   "*)"}]}], "\[IndentingNewLine]", 
  RowBox[{
   RowBox[{"ls", "@", 
    RowBox[{"SetFrameDuration", "[", "50", "]"}]}], 
-  "\[IndentingNewLine]"}], "\[IndentingNewLine]", 
- RowBox[{"numLEDs", "=", "16"}], "\[IndentingNewLine]", 
- RowBox[{"rIndex", "=", "1"}], "\[IndentingNewLine]", 
+  "\[IndentingNewLine]"}], "\n", 
+ RowBox[{"numLEDs", "=", "16"}], "\n", 
+ RowBox[{"rIndex", "=", "1"}], "\n", 
  RowBox[{"r", "=", 
   RowBox[{"{", 
    RowBox[{
    "0", ",", "0", ",", "0", ",", "0", ",", "0", ",", "0", ",", "0", ",", "0", 
     ",", "0", ",", "0", ",", "0", ",", "0", ",", "0", ",", "0", ",", "0", ",",
-     "0"}], "}"}]}], "\[IndentingNewLine]", 
+     "0"}], "}"}]}], "\n", 
  RowBox[{"g", "=", 
   RowBox[{"{", 
    RowBox[{
    "0", ",", "0", ",", "0", ",", "0", ",", "0", ",", "0", ",", "0", ",", "0", 
     ",", "0", ",", "0", ",", "0", ",", "0", ",", "0", ",", "0", ",", "0", ",",
-     "0"}], "}"}]}], "\[IndentingNewLine]", 
+     "0"}], "}"}]}], "\n", 
  RowBox[{
   RowBox[{"b", "=", 
    RowBox[{"{", 
@@ -78,17 +78,11 @@ Cell[BoxData[{
     "0", ",", "0", ",", "0", ",", "0", ",", "0", ",", "0", ",", "0", ",", "0",
       ",", "0", ",", "0", ",", "0", ",", "0", ",", "0", ",", "0", ",", "0", 
      ",", "0"}], "}"}]}], "\n", "\[IndentingNewLine]", 
-  RowBox[{"(*", " ", 
+  RowBox[{"(*", 
    RowBox[{
-    RowBox[{"Frame", " ", "rendered", " ", "callback"}], ",", 
-    RowBox[{
-    "is", " ", "called", " ", "when", " ", "a", " ", "new", " ", "frame", " ",
-      "was", " ", "rendered"}]}], " ", "*)"}], "\n", 
-  RowBox[{"(*", " ", 
-   RowBox[{
-   "We", " ", "increase", " ", "the", " ", "index", " ", "of", " ", "one", 
-    " ", "blue", " ", "LED", " ", "with", " ", "every", " ", "frame"}], " ", 
-   "*)"}]}], "\[IndentingNewLine]", 
+   "Use", " ", "frame", " ", "rendered", " ", "callback", " ", "to", " ", 
+    "move", " ", "the", " ", "active", " ", "LED", " ", "every", " ", 
+    "frame"}], "*)"}]}], "\[IndentingNewLine]", 
  RowBox[{
   RowBox[{
    RowBox[{"FrameRenderedCB", "[", 
@@ -103,8 +97,8 @@ Cell[BoxData[{
       "\[IndentingNewLine]", 
       RowBox[{"If", "[", 
        RowBox[{
-        RowBox[{"rIndex", "==", "numLEDs"}], ",", 
-        RowBox[{"rIndex", "=", "1"}], ",", 
+        RowBox[{"rIndex", "\[Equal]", "numLEDs"}], ",", "\[IndentingNewLine]", 
+        RowBox[{"rIndex", "=", "1"}], ",", "\[IndentingNewLine]", 
         RowBox[{"rIndex", "=", 
          RowBox[{"rIndex", "+", "1"}]}]}], "]"}], ";", "\[IndentingNewLine]", 
       
@@ -112,37 +106,37 @@ Cell[BoxData[{
        RowBox[{"b", "[", 
         RowBox[{"[", "rIndex", "]"}], "]"}], "=", "255"}], ";", 
       "\[IndentingNewLine]", "\[IndentingNewLine]", 
-      RowBox[{"(*", " ", 
+      RowBox[{"(*", 
        RowBox[{
        "Set", " ", "new", " ", "data", " ", "for", " ", "next", " ", "render",
-         " ", "cycle"}], " ", "*)"}], "\[IndentingNewLine]", 
+         " ", "cycle"}], "*)"}], "\[IndentingNewLine]", 
       RowBox[{"sender", "@", 
        RowBox[{"SetRGBValues", "[", 
         RowBox[{"0", ",", "numLEDs", ",", "r", ",", "g", ",", "b"}], 
         "]"}]}]}]}], "\[IndentingNewLine]", "]"}]}], 
-  "\[IndentingNewLine]"}], "\[IndentingNewLine]", 
+  "\n"}], "\[IndentingNewLine]", 
  RowBox[{
   RowBox[{"AddEventHandler", "[", 
    RowBox[{
     RowBox[{"ls", "@", "FrameRendered"}], ",", "FrameRenderedCB"}], "]"}], 
   "\[IndentingNewLine]", "\[IndentingNewLine]", 
-  RowBox[{"(*", " ", 
+  RowBox[{"(*", 
    RowBox[{
    "Set", " ", "initial", " ", "rgb", " ", "values", " ", "to", " ", "get", 
-    " ", "started"}], " ", "*)"}]}], "\n", 
+    " ", "started"}], "*)"}]}], "\n", 
  RowBox[{
   RowBox[{"ls", "@", 
    RowBox[{"SetRGBValues", "[", 
     RowBox[{"0", ",", "numLEDs", ",", "r", ",", "g", ",", "b"}], "]"}]}], 
-  "\[IndentingNewLine]"}], "\[IndentingNewLine]", 
+  "\n"}], "\[IndentingNewLine]", 
  RowBox[{
   RowBox[{"Input", "[", "\"\<Click OK to exit\>\"", "]"}], 
   "\[IndentingNewLine]", "\[IndentingNewLine]", 
-  RowBox[{"(*", " ", 
-   RowBox[{"Clean", " ", "up"}], " ", "*)"}]}], "\[IndentingNewLine]", 
+  RowBox[{"(*", 
+   RowBox[{"Clean", " ", "up"}], "*)"}]}], "\n", 
  RowBox[{"ipcon", "@", 
-  RowBox[{"Disconnect", "[", "]"}]}], "\[IndentingNewLine]", 
- RowBox[{"ReleaseNETObject", "[", "ls", "]"}], "\[IndentingNewLine]", 
+  RowBox[{"Disconnect", "[", "]"}]}], "\n", 
+ RowBox[{"ReleaseNETObject", "[", "ls", "]"}], "\n", 
  RowBox[{"ReleaseNETObject", "[", "ipcon", "]"}]}], "Input",
  CellChangeTimes->{{3.600075175574196*^9, 3.600075177574486*^9}, {
    3.600075518821967*^9, 3.60007554243471*^9}, {3.600075580562348*^9, 
@@ -169,11 +163,12 @@ Cell[BoxData[{
    3.60060918655473*^9, {3.600609227515625*^9, 3.600609227953993*^9}, {
    3.600757730144732*^9, 3.600757739578017*^9}, {3.600758332882258*^9, 
    3.6007586020810337`*^9}, {3.600758693721816*^9, 3.600758758692275*^9}, 
-   3.60075883903334*^9, {3.6007589692727337`*^9, 3.6007589818370857`*^9}}]
+   3.60075883903334*^9, {3.6007589692727337`*^9, 3.6007589818370857`*^9}, {
+   3.653028560775333*^9, 3.6530285852551317`*^9}}]
 },
 WindowSize->{1521, 867},
-WindowMargins->{{223, Automatic}, {82, Automatic}},
-FrontEndVersion->"9.0 for Linux x86 (64-bit) (February 7, 2013)",
+WindowMargins->{{222, 175}, {81, Automatic}},
+FrontEndVersion->"9.0 for Linux x86 (64-bit) (November 20, 2012)",
 StyleDefinitions->"Default.nb"
 ]
 (* End of Notebook Content *)
@@ -188,7 +183,7 @@ CellTagsIndex->{}
 (*NotebookFileOutline
 Notebook[{
 Cell[400, 13, 652, 12, 55, "Input"],
-Cell[1055, 27, 6684, 144, 913, "Input"]
+Cell[1055, 27, 6280, 139, 935, "Input"]
 }
 ]
 *)
