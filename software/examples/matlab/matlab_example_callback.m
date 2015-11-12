@@ -19,7 +19,7 @@ function matlab_example_callback()
     r_index = 1;
 
     ipcon = IPConnection(); % Create IP connection
-    ls = BrickletLEDStrip(UID, ipcon); % Create device object
+    ls = handle(BrickletLEDStrip(UID, ipcon), 'CallbackProperties'); % Create device object
 
     ipcon.connect(HOST, PORT); % Connect to brickd
     % Don't use device before ipcon is connected
