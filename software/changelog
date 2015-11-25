@@ -1,20 +1,20 @@
-2.0.0:
+2013-11-27: 2.0.0 (d19363b)
 - Initial version
 
-2.0.1:
+2013-12-19: 2.0.1 (7cd5d3c)
 - Add Get/SetClockFrequency function
 
-2.0.2:
+2014-07-03: 2.0.2 (475c8f4)
 - Add support for WS2811 and WS2812
 
-2.0.3:
+2014-07-07: 2.0.3 (0846a66)
 - Timing for WS2811 and WS2812 now exactly as specified in the datasheet
 
-2.0.4:
+2014-07-10: 2.0.4 (cd5f11d)
 - Use timings from "Tims blog" instead of timings from datasheet:
   http://cpldcpu.wordpress.com/2014/01/14/light_ws2812-library-v2-0-part-i-understanding-the-ws2812/
 
-2.0.5:
+2014-07-22: 2.0.5 (46ca89c)
 - Frame duration of 0 now means that no more frames shall be set
 - Set RGB values at least two times to make sure that they are really written
 - Fix possible overflow if Brick with two Bricklet connectors is used
