@@ -18,7 +18,7 @@ type
 const
   HOST = 'localhost';
   PORT = 4223;
-  UID = 'XYZ'; { Change to your UID }
+  UID = 'XYZ'; { Change XYZ to the UID of your LED Strip Bricklet }
   r: {$ifdef FPC}array [0..15] of byte{$else}TArray0To15OfUInt8{$endif} =
      (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
   g: {$ifdef FPC}array [0..15] of byte{$else}TArray0To15OfUInt8{$endif} =

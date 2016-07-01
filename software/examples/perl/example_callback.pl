@@ -5,7 +5,7 @@ use Tinkerforge::BrickletLEDStrip;
 
 use constant HOST => 'localhost';
 use constant PORT => 4223;
-use constant UID => 'XYZ'; # Change to your UID
+use constant UID => 'XYZ'; # Change XYZ to the UID of your LED Strip Bricklet
 use constant NUM_LEDS => 16;
 
 our $r = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];

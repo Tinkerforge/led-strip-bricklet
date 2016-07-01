@@ -3,7 +3,7 @@ function octave_example_simple()
 
     HOST = "localhost";
     PORT = 4223;
-    UID = "XYZ"; % Change to your UID
+    UID = "XYZ"; % Change XYZ to the UID of your LED Strip Bricklet
 
     ipcon = java_new("com.tinkerforge.IPConnection"); % Create IP connection
     ls = java_new("com.tinkerforge.BrickletLEDStrip", UID, ipcon); % Create device object

@@ -8,7 +8,7 @@ include Tinkerforge
 
 HOST = 'localhost'
 PORT = 4223
-UID = 'XYZ' # Change to your UID
+UID = 'XYZ' # Change XYZ to the UID of your LED Strip Bricklet
 NUM_LEDS = 16
 
 r = [0]*NUM_LEDS

@@ -4,7 +4,9 @@ import com.tinkerforge.BrickletLEDStrip;
 public class ExampleCallback {
 	private static final String HOST = "localhost";
 	private static final int PORT = 4223;
-	private static final String UID = "XYZ"; // Change to your UID
+
+	// Change XYZ to the UID of your LED Strip Bricklet
+	private static final String UID = "XYZ";
 	private static final int NUM_LEDS = 16;
 	private static int rIndex = 0;
 	private static short[] r = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
