@@ -31,7 +31,7 @@
 
 #define BRICKLET_FIRMWARE_VERSION_MAJOR 2
 #define BRICKLET_FIRMWARE_VERSION_MINOR 0
-#define BRICKLET_FIRMWARE_VERSION_REVISION 5
+#define BRICKLET_FIRMWARE_VERSION_REVISION 6
 
 #define BRICKLET_HARDWARE_VERSION_MAJOR 1
 #define BRICKLET_HARDWARE_VERSION_MINOR 0
@@ -56,7 +56,10 @@
 #define MAX_BRICKLET_CONFIGS
 
 typedef struct {
-	RGB rgb;
+	union {
+		RGB rgb;
+		RGBW rgbw;
+	};
 
 	uint16_t frame_duration;
 	uint16_t frame_counter;
