@@ -132,6 +132,21 @@ void bb_write_3byte_ws2801(const uint32_t value) {
 	}
 }
 
+void bb_write_3byte_lpd8806(const uint32_t value) {
+	for(int8_t i = 23; i >= 0; i--) {
+		if((value >> i) & 1) {
+			PIN_SPI_SDI.pio->PIO_CODR = PIN_SPI_SDI.mask;
+		} else {
+			PIN_SPI_SDI.pio->PIO_SODR = PIN_SPI_SDI.mask;
+		}
+
+		SLEEP_NS(BC->clock_delay);
+		PIN_SPI_CKI.pio->PIO_CODR = PIN_SPI_CKI.mask;
+		SLEEP_NS(BC->clock_delay);
+		PIN_SPI_CKI.pio->PIO_SODR = PIN_SPI_CKI.mask;
+	}
+}
+
 void set_rgb_by_global_index(uint16_t index, uint8_t r, uint8_t g, uint8_t b) {
 	uint8_t bc_num = 0;
 	for(; bc_num < 4; bc_num++) {
@@ -260,7 +275,7 @@ void get_clock_frequency(const ComType com, const GetClockFrequency *data) {
 }
 
 void set_chip_type(const ComType com, const SetChipType *data) {
-	if(data->chip != 2801 && data->chip != 2811 && data->chip != 2812) {
+	if(data->chip != 2801 && data->chip != 2811 && data->chip != 2812 && data->chip != 8806) {
 		BA->com_return_error(data, sizeof(MessageHeader), MESSAGE_ERROR_CODE_INVALID_PARAMETER, com);
 		return;
 	}
@@ -269,6 +284,7 @@ void set_chip_type(const ComType com, const SetChipType *data) {
 		case 2801:  BC->options = (BC->options & (~OPTION_TYPE_MASK)) | OPTION_TYPE_WS2801;  break;
 		case 2811:  BC->options = (BC->options & (~OPTION_TYPE_MASK)) | OPTION_TYPE_WS2811;  break;
 		case 2812:  BC->options = (BC->options & (~OPTION_TYPE_MASK)) | OPTION_TYPE_WS2812;  break;
+		case 8806:  BC->options = (BC->options & (~OPTION_TYPE_MASK)) | OPTION_TYPE_LPD8806;  break;
 		default: break;
 	}
 
@@ -284,6 +300,7 @@ void get_chip_type(const ComType com, const GetChipType *data) {
 		case OPTION_TYPE_WS2801:  gctr.chip = 2801;  break;
 		case OPTION_TYPE_WS2811:  gctr.chip = 2811;  break;
 		case OPTION_TYPE_WS2812:  gctr.chip = 2812;  break;
+		case OPTION_TYPE_LPD8806:  gctr.chip = 8806;  break;
 		default: break;
 	}
 
@@ -545,6 +562,24 @@ void tick(const uint8_t tick_type) {
 									bb_write_3byte_ws2812((b << 16) | (g << 8) | r);
 								}
 							}
+							break;
+						}
+
+						case OPTION_TYPE_LPD8806: {
+							for(uint16_t i = 0; i < BC->frame_length; i++) {
+								uint8_t r = 0;
+								uint8_t g = 0;
+								uint8_t b = 0;
+
+								get_rgb_from_global_index(i, &r, &g, &b);
+								//+128 because the MSB has to be high while data shifting
+								uint8_t r_tmp = r/2+128;
+								uint8_t g_tmp = g/2+128;
+								uint8_t b_tmp = b/2+128;
+								bb_write_3byte_lpd8806((b_tmp << 16) | (g_tmp << 8) | r_tmp);
+							}
+							//When MSB is low the shift registers resets and are ready for new data
+							bb_write_3byte_lpd8806((0 << 16) | (0 << 8) | 0);
 							break;
 						}
 					}
