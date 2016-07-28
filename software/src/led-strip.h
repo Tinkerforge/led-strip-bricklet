@@ -36,17 +36,19 @@
 #define TYPE_WS2811  1
 #define TYPE_WS2812  2
 #define TYPE_LPD8806 3
+#define TYPE_APA102  4
 
-#define OPTION_TYPE_MASK      (3 << 1)
+#define OPTION_TYPE_MASK      (7 << 1)
 
 #define OPTION_FRAME_RENDERED (1 << 0)
 #define OPTION_TYPE_WS2801    (TYPE_WS2801 << 1)
 #define OPTION_TYPE_WS2811    (TYPE_WS2811 << 1)
 #define OPTION_TYPE_WS2812    (TYPE_WS2812 << 1)
 #define OPTION_TYPE_LPD8806   (TYPE_LPD8806 << 1)
-#define OPTION_DATA_CHANGED   (1 << 3)
-#define OPTION_DATA_ONE_MORE  (1 << 4)
-#define OPTION_4_CHANNELS     (1 << 5)
+#define OPTION_TYPE_APA102    (TYPE_APA102 << 1)
+#define OPTION_DATA_CHANGED   (1 << 4)
+#define OPTION_DATA_ONE_MORE  (1 << 5)
+#define OPTION_4_CHANNELS     (1 << 6)
 
 #define FID_SET_RGB_VALUES      1
 #define FID_GET_RGB_VALUES      2
@@ -193,7 +195,7 @@ void bb_write_3byte_ws2801(const uint32_t value);
 void bb_write_3byte_ws2811(const uint32_t value);
 void bb_write_3byte_ws2812(const uint32_t value);
 void bb_write_4byte_ws2812(const uint32_t value);
-void bb_write_3byte_lpd8806(const uint32_t value);
+void bb_write_1byte(const uint32_t value);
 
 void set_rgb_by_global_index(uint16_t index, uint8_t r, uint8_t g, uint8_t b);
 void get_rgb_from_global_index(uint16_t index, uint8_t *r, uint8_t *g, uint8_t *b);

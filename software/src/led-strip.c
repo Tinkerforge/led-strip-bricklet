@@ -132,8 +132,8 @@ void bb_write_3byte_ws2801(const uint32_t value) {
 	}
 }
 
-void bb_write_3byte_lpd8806(const uint32_t value) {
-	for(int8_t i = 23; i >= 0; i--) {
+void bb_write_1byte(const uint32_t value) {
+	for(int8_t i = 7; i >= 0; i--) {
 		if((value >> i) & 1) {
 			PIN_SPI_SDI.pio->PIO_CODR = PIN_SPI_SDI.mask;
 		} else {
@@ -275,12 +275,13 @@ void get_clock_frequency(const ComType com, const GetClockFrequency *data) {
 }
 
 void set_chip_type(const ComType com, const SetChipType *data) {
-	if(data->chip != 2801 && data->chip != 2811 && data->chip != 2812 && data->chip != 8806) {
+	if(data->chip != 2801 && data->chip != 2811 && data->chip != 2812 && data->chip != 8806 && data->chip != 102) {
 		BA->com_return_error(data, sizeof(MessageHeader), MESSAGE_ERROR_CODE_INVALID_PARAMETER, com);
 		return;
 	}
 
 	switch(data->chip) {
+		case 102:  BC->options = (BC->options & (~OPTION_TYPE_MASK)) | OPTION_TYPE_APA102;  break;
 		case 2801:  BC->options = (BC->options & (~OPTION_TYPE_MASK)) | OPTION_TYPE_WS2801;  break;
 		case 2811:  BC->options = (BC->options & (~OPTION_TYPE_MASK)) | OPTION_TYPE_WS2811;  break;
 		case 2812:  BC->options = (BC->options & (~OPTION_TYPE_MASK)) | OPTION_TYPE_WS2812;  break;
@@ -297,6 +298,7 @@ void get_chip_type(const ComType com, const GetChipType *data) {
 	gctr.header.length  = sizeof(GetChipTypeReturn);
 
 	switch(BC->options & OPTION_TYPE_MASK) {
+		case OPTION_TYPE_APA102:  gctr.chip = 102;  break;
 		case OPTION_TYPE_WS2801:  gctr.chip = 2801;  break;
 		case OPTION_TYPE_WS2811:  gctr.chip = 2811;  break;
 		case OPTION_TYPE_WS2812:  gctr.chip = 2812;  break;
@@ -494,6 +496,7 @@ void constructor(void) {
 }
 
 void tick(const uint8_t tick_type) {
+	//BA->printf("tick %d\n\r",BC->options);
 	if(BC->frame_duration == 0) {
 		return;
 	}
@@ -576,11 +579,31 @@ void tick(const uint8_t tick_type) {
 								uint8_t r_tmp = r/2+128;
 								uint8_t g_tmp = g/2+128;
 								uint8_t b_tmp = b/2+128;
-								bb_write_3byte_lpd8806((b_tmp << 16) | (g_tmp << 8) | r_tmp);
+								bb_write_3byte_ws2801((b_tmp << 16) | (g_tmp << 8) | r_tmp);
 							}
 							//When MSB is low the shift registers resets and are ready for new data
-							bb_write_3byte_lpd8806((0 << 16) | (0 << 8) | 0);
+							bb_write_3byte_ws2801((0 << 16) | (0 << 8) | 0);
 							break;
+
+						case OPTION_TYPE_APA102: {
+							bb_write_1byte((0 << 8) | 0);
+							bb_write_1byte((0 << 8) | 0);
+							bb_write_1byte((0 << 8) | 0);
+							bb_write_1byte((0 << 8) | 0);
+
+							for(uint16_t i = 0; i < BC->frame_length; i++) {
+								uint8_t r = 0;
+								uint8_t g = 0;
+								uint8_t b = 0;
+
+								get_rgb_from_global_index(i, &r, &g, &b);
+								bb_write_1byte((255 << 8) | 255);
+								bb_write_3byte_ws2801((b << 16) | (g << 8) | r);
+							}
+						//The datasheet says that there have to be a 4-byte endframe, but it should
+						//be left out because the endframe is not different to another LED with RGB
+						//with these values: R=B=G=255
+						}
 						}
 					}
 					__enable_irq();
