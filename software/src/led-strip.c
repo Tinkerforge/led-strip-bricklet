@@ -452,6 +452,7 @@ void invocation(const ComType com, const uint8_t *data) {
 			get_chip_type(com, (GetChipType*)data);
 			return;
 		}
+
 		case FID_SET_RGBW_VALUES: {
 			set_rgbw_values(com, (SetRGBWValues*)data);
 			return;
@@ -510,6 +511,77 @@ void constructor(void) {
 	reconfigure_bcs();
 }
 
+void option_ws2801(void) {
+	for(uint16_t i = 0; i < BC->frame_length; i++) {
+		uint8_t r = 0;
+		uint8_t g = 0;
+		uint8_t b = 0;
+
+		get_rgb_from_global_index(i, &r, &g, &b);
+		bb_write_3byte_ws2801((b << 16) | (g << 8) | r);
+	}
+}
+
+void option_ws281x(void) {
+	uint8_t r = 0;
+	uint8_t g = 0;
+	uint8_t b = 0;
+	uint8_t w = 0;
+
+	if (BC->options & OPTION_4_CHANNELS) {
+		for(uint16_t i = 0; i < BC->frame_length; i++) {
+			get_rgbw_from_global_index(i, &r, &g, &b, &w);
+			bb_write_4byte_ws2812((b << 24) | (g << 16) | (r << 8) | w);
+		};
+	} else {
+		for(uint16_t i = 0; i < BC->frame_length; i++) {
+			get_rgb_from_global_index(i, &r, &g, &b);
+			bb_write_3byte_ws2812((b << 16) | (g << 8) | r);
+		}
+	}
+}
+
+void option_lpd8806(void) {
+	for(uint16_t i = 0; i < BC->frame_length; i++) {
+		uint8_t r = 0;
+		uint8_t g = 0;
+		uint8_t b = 0;
+
+		get_rgb_from_global_index(i, &r, &g, &b);
+
+		// +128 because the MSB has to be high while data shifting
+		uint8_t r_tmp = r/2+128;
+		uint8_t g_tmp = g/2+128;
+		uint8_t b_tmp = b/2+128;
+		bb_write_3byte_ws2801((b_tmp << 16) | (g_tmp << 8) | r_tmp);
+	}
+
+	// When MSB is low the shift registers resets and are ready for new data
+	bb_write_3byte_ws2801((0 << 16) | (0 << 8) | 0);
+}
+
+void option_apa102(void) {
+	bb_write_1byte((0 << 8) | 0);
+	bb_write_1byte((0 << 8) | 0);
+	bb_write_1byte((0 << 8) | 0);
+	bb_write_1byte((0 << 8) | 0);
+
+	for(uint16_t i = 0; i < BC->frame_length; i++) {
+		uint8_t r = 0;
+		uint8_t g = 0;
+		uint8_t b = 0;
+		uint8_t w = 0;
+		get_rgbw_from_global_index(i, &r, &g, &b, &w);
+
+		// 3-Bit "1" and brightness setting 5-Bit: constant current output value
+		w |= 0b11100000;
+		bb_write_4byte_apa102((w << 24) | (r << 16) | (g << 8) | b);
+	}
+	// The datasheet says that there have to be a 4-byte endframe, but it should
+	// be left out because the endframe is not different to another LED with RGB
+	// with these values: R=B=G=255
+}
+
 void tick(const uint8_t tick_type) {
 	if(BC->frame_duration == 0) {
 		return;
@@ -549,79 +621,11 @@ void tick(const uint8_t tick_type) {
 					}
 					__disable_irq();
 					switch(BC->options & OPTION_TYPE_MASK) {
-						case OPTION_TYPE_WS2801: {
-							for(uint16_t i = 0; i < BC->frame_length; i++) {
-								uint8_t r = 0;
-								uint8_t g = 0;
-								uint8_t b = 0;
-
-								get_rgb_from_global_index(i, &r, &g, &b);
-								bb_write_3byte_ws2801((b << 16) | (g << 8) | r);
-							}
-							break;
-						}
-
+						case OPTION_TYPE_WS2801:  option_ws2801();  break;
 						case OPTION_TYPE_WS2811:
-						case OPTION_TYPE_WS2812: {
-							uint8_t r = 0;
-							uint8_t g = 0;
-							uint8_t b = 0;
-							uint8_t w = 0;
-								
-							if (BC->options & OPTION_4_CHANNELS) {
-								for(uint16_t i = 0; i < BC->frame_length; i++) {
-									get_rgbw_from_global_index(i, &r, &g, &b, &w);
-									bb_write_4byte_ws2812((b << 24) | (g << 16) | (r << 8) | w);
-								};
-							} else { 
-								for(uint16_t i = 0; i < BC->frame_length; i++) {
-									get_rgb_from_global_index(i, &r, &g, &b);
-									bb_write_3byte_ws2812((b << 16) | (g << 8) | r);
-								}
-							}
-							break;
-						}
-
-						case OPTION_TYPE_LPD8806: {
-							for(uint16_t i = 0; i < BC->frame_length; i++) {
-								uint8_t r = 0;
-								uint8_t g = 0;
-								uint8_t b = 0;
-
-								get_rgb_from_global_index(i, &r, &g, &b);
-								//+128 because the MSB has to be high while data shifting
-								uint8_t r_tmp = r/2+128;
-								uint8_t g_tmp = g/2+128;
-								uint8_t b_tmp = b/2+128;
-								bb_write_3byte_ws2801((b_tmp << 16) | (g_tmp << 8) | r_tmp);
-							}
-							//When MSB is low the shift registers resets and are ready for new data
-							bb_write_3byte_ws2801((0 << 16) | (0 << 8) | 0);
-							break;
-
-						case OPTION_TYPE_APA102: {
-							bb_write_1byte((0 << 8) | 0);
-							bb_write_1byte((0 << 8) | 0);
-							bb_write_1byte((0 << 8) | 0);
-							bb_write_1byte((0 << 8) | 0);
-
-							for(uint16_t i = 0; i < BC->frame_length; i++) {
-								uint8_t r = 0;
-								uint8_t g = 0;
-								uint8_t b = 0;
-								uint8_t w = 0;
-								get_rgbw_from_global_index(i, &r, &g, &b, &w);
-								//get_rgb_from_global_index(i, &r, &g, &b);
-								//3-Bit "1" and brightness setting 5-Bit: constant current output value
-								w |= 0b11100000;
-								bb_write_4byte_apa102((w << 24) | (r << 16) | (g << 8) | b);
-								//bb_write_4byte_apa102((255 << 24) | (r << 16) | (g << 8) | b);
-							}
-						//The datasheet says that there have to be a 4-byte endframe, but it should
-						//be left out because the endframe is not different to another LED with RGB
-						//with these values: R=B=G=255
-						}
-						}
+						case OPTION_TYPE_WS2812:  option_ws281x();  break;
+						case OPTION_TYPE_LPD8806: option_lpd8806(); break;
+						case OPTION_TYPE_APA102:  option_apa102();  break;
 					}
 					__enable_irq();
 				}
