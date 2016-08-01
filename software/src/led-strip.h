@@ -195,6 +195,7 @@ void bb_write_3byte_ws2801(const uint32_t value);
 void bb_write_3byte_ws2811(const uint32_t value);
 void bb_write_3byte_ws2812(const uint32_t value);
 void bb_write_4byte_ws2812(const uint32_t value);
+void bb_write_4byte_apa102(const uint32_t value);
 void bb_write_1byte(const uint32_t value);
 
 void set_rgb_by_global_index(uint16_t index, uint8_t r, uint8_t g, uint8_t b);

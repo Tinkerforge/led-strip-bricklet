@@ -132,6 +132,21 @@ void bb_write_3byte_ws2801(const uint32_t value) {
 	}
 }
 
+void bb_write_4byte_apa102(const uint32_t value) {
+	for(int8_t i = 31; i >= 0; i--) {
+		if((value >> i) & 1) {
+			PIN_SPI_SDI.pio->PIO_CODR = PIN_SPI_SDI.mask;
+		} else {
+			PIN_SPI_SDI.pio->PIO_SODR = PIN_SPI_SDI.mask;
+		}
+
+		SLEEP_NS(BC->clock_delay);
+		PIN_SPI_CKI.pio->PIO_CODR = PIN_SPI_CKI.mask;
+		SLEEP_NS(BC->clock_delay);
+		PIN_SPI_CKI.pio->PIO_SODR = PIN_SPI_CKI.mask;
+	}
+}
+
 void bb_write_1byte(const uint32_t value) {
 	for(int8_t i = 7; i >= 0; i--) {
 		if((value >> i) & 1) {
@@ -496,7 +511,6 @@ void constructor(void) {
 }
 
 void tick(const uint8_t tick_type) {
-	//BA->printf("tick %d\n\r",BC->options);
 	if(BC->frame_duration == 0) {
 		return;
 	}
@@ -595,10 +609,13 @@ void tick(const uint8_t tick_type) {
 								uint8_t r = 0;
 								uint8_t g = 0;
 								uint8_t b = 0;
-
-								get_rgb_from_global_index(i, &r, &g, &b);
-								bb_write_1byte((255 << 8) | 255);
-								bb_write_3byte_ws2801((b << 16) | (g << 8) | r);
+								uint8_t w = 0;
+								get_rgbw_from_global_index(i, &r, &g, &b, &w);
+								//get_rgb_from_global_index(i, &r, &g, &b);
+								//3-Bit "1" and brightness setting 5-Bit: constant current output value
+								w |= 0b11100000;
+								bb_write_4byte_apa102((w << 24) | (r << 16) | (g << 8) | b);
+								//bb_write_4byte_apa102((255 << 24) | (r << 16) | (g << 8) | b);
 							}
 						//The datasheet says that there have to be a 4-byte endframe, but it should
 						//be left out because the endframe is not different to another LED with RGB
