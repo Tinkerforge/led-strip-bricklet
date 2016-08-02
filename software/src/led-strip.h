@@ -192,11 +192,15 @@ void set_rgbw_values(const ComType com, const SetRGBWValues *data);
 void get_rgbw_values(const ComType com, const GetRGBWValues *data);
 
 void bb_write_3byte_ws2801(const uint32_t value);
-void bb_write_3byte_ws2811(const uint32_t value);
-void bb_write_3byte_ws2812(const uint32_t value);
-void bb_write_4byte_ws2812(const uint32_t value);
+void bb_write_3byte_ws281x(const uint32_t value);
+void bb_write_4byte_ws281x(const uint32_t value);
 void bb_write_4byte_apa102(const uint32_t value);
 void bb_write_1byte(const uint32_t value);
+
+void option_ws2801(void);
+void option_ws281x(void);
+void option_lpd8806(void);
+void option_apa102(void);
 
 void set_rgb_by_global_index(uint16_t index, uint8_t r, uint8_t g, uint8_t b);
 void get_rgb_from_global_index(uint16_t index, uint8_t *r, uint8_t *g, uint8_t *b);

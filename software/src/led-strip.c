@@ -88,7 +88,7 @@ ns_to_cycle(2000)
 // This fits nearly exactly in the middle of the margins found by
 // Tim: http://cpldcpu.wordpress.com/2014/01/14/light_ws2812-library-v2-0-part-i-understanding-the-ws2812/
 // It does not correspond to the datasheet!
-void bb_write_3byte_ws2812(const uint32_t value) {
+void bb_write_3byte_ws281x(const uint32_t value) {
 	for(int8_t i = 23; i >= 0; i--) {
 		if((value >> i) & 1) {
 			PIN_SPI_SDI.pio->PIO_CODR = PIN_SPI_SDI.mask;
@@ -102,7 +102,7 @@ void bb_write_3byte_ws2812(const uint32_t value) {
 		}
 	}
 }
-void bb_write_4byte_ws2812(const uint32_t value) {
+void bb_write_4byte_ws281x(const uint32_t value) {
 	for(int8_t i = 31; i >= 0; i--) {
 		if((value >> i) & 1) {
 			PIN_SPI_SDI.pio->PIO_CODR = PIN_SPI_SDI.mask;
@@ -531,12 +531,12 @@ void option_ws281x(void) {
 	if (BC->options & OPTION_4_CHANNELS) {
 		for(uint16_t i = 0; i < BC->frame_length; i++) {
 			get_rgbw_from_global_index(i, &r, &g, &b, &w);
-			bb_write_4byte_ws2812((b << 24) | (g << 16) | (r << 8) | w);
+			bb_write_4byte_ws281x((b << 24) | (g << 16) | (r << 8) | w);
 		};
 	} else {
 		for(uint16_t i = 0; i < BC->frame_length; i++) {
 			get_rgb_from_global_index(i, &r, &g, &b);
-			bb_write_3byte_ws2812((b << 16) | (g << 8) | r);
+			bb_write_3byte_ws281x((b << 16) | (g << 8) | r);
 		}
 	}
 }
@@ -570,12 +570,12 @@ void option_apa102(void) {
 		uint8_t r = 0;
 		uint8_t g = 0;
 		uint8_t b = 0;
-		uint8_t w = 0;
-		get_rgbw_from_global_index(i, &r, &g, &b, &w);
+		uint8_t brightness = 0;
+		get_rgbw_from_global_index(i, &r, &g, &b, &brightness);
 
 		// 3-Bit "1" and brightness setting 5-Bit: constant current output value
-		w |= 0b11100000;
-		bb_write_4byte_apa102((w << 24) | (r << 16) | (g << 8) | b);
+		brightness |= 0b11100000;
+		bb_write_4byte_apa102((brightness << 24) | (r << 16) | (g << 8) | b);
 	}
 	// The datasheet says that there have to be a 4-byte endframe, but it should
 	// be left out because the endframe is not different to another LED with RGB
