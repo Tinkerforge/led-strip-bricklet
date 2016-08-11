@@ -57,7 +57,6 @@
 		); \
 	} while(0)
 
-
 /*   --- Cycle number is calculated with the following Python script ---
  *       !!! This is currently not used anymore !!!
 CYCLE_NS = 15.63
@@ -111,7 +110,6 @@ void bb_write_withClock(const uint32_t value, const int8_t byteCount) {
 		} else {
 			PIN_SPI_SDI.pio->PIO_SODR = PIN_SPI_SDI.mask;
 		}
-
 		SLEEP_NS(BC->clock_delay);
 		PIN_SPI_CKI.pio->PIO_CODR = PIN_SPI_CKI.mask;
 		SLEEP_NS(BC->clock_delay);
@@ -130,7 +128,6 @@ void set_rgb_by_global_index(uint16_t index, uint8_t r, uint8_t g, uint8_t b) {
 			}
 		}
 	}
-
 	if(index > RGB_LENGTH) {
 		return;
 	}
@@ -141,7 +138,6 @@ void set_rgb_by_global_index(uint16_t index, uint8_t r, uint8_t g, uint8_t b) {
 	bc->rgb.r[index] = r;
 	bc->rgb.g[index] = g;
 	bc->rgb.b[index] = b;
-
 	BC->options |= OPTION_DATA_CHANGED;
 	BC->options |= OPTION_DATA_ONE_MORE;
 }
@@ -157,11 +153,9 @@ void get_rgb_from_global_index(uint16_t index, uint8_t *r, uint8_t *g, uint8_t *
 			}
 		}
 	}
-
 	if(index > RGB_LENGTH) {
 		return;
 	}
-
 	int8_t rgb_bc_diff = -(BS->port - 'a');
 	BrickContext *bc = BCO_DIRECT(bc_num + rgb_bc_diff);
 
@@ -237,7 +231,6 @@ void get_rgb_values(const ComType com, const GetRGBValues *data) {
 	for(uint16_t i = data->index; i < data->index + data->length; i++) {
 		get_rgb_from_global_index(i, &grgbvr.r[i-data->index], &grgbvr.g[i-data->index], &grgbvr.b[i-data->index]);
 	}
-
 	BA->send_blocking_with_timeout(&grgbvr, sizeof(GetRGBValuesReturn), com);
 }
 
@@ -251,7 +244,6 @@ void get_frame_duration(const ComType com, const GetFrameDuration *data) {
 	gcr.header         = data->header;
 	gcr.header.length  = sizeof(GetFrameDurationReturn);
 	gcr.duration       = BC->frame_duration;
-
 	BA->send_blocking_with_timeout(&gcr, sizeof(GetFrameDurationReturn), com);
 }
 
@@ -259,10 +251,8 @@ void get_supply_voltage(const ComType com, const GetSupplyVoltage *data) {
 	GetSupplyVoltageReturn gsvr;
 	gsvr.header         = data->header;
 	gsvr.header.length  = sizeof(GetSupplyVoltageReturn);
-
 	// voltage divider: 10k / 1k
 	gsvr.voltage        = BA->adc_channel_get_data(BS->adc_channel)*3300*11/4095;
-
 	BA->send_blocking_with_timeout(&gsvr, sizeof(GetSupplyVoltageReturn), com);
 }
 
@@ -281,7 +271,6 @@ void get_clock_frequency(const ComType com, const GetClockFrequency *data) {
 	gcfr.header         = data->header;
 	gcfr.header.length  = sizeof(GetClockFrequencyReturn);
 	gcfr.frequency      = 1000000000/(BC->clock_delay*2);
-
 	BA->send_blocking_with_timeout(&gcfr, sizeof(GetClockFrequencyReturn), com);
 }
 
@@ -299,7 +288,6 @@ void set_chip_type(const ComType com, const SetChipType *data) {
 		case 8806:  BC->options = (BC->options & (~OPTION_TYPE_MASK)) | OPTION_TYPE_LPD8806;  break;
 		default: break;
 	}
-
 	BA->com_return_setter(com, data);
 }
 
@@ -307,7 +295,6 @@ void get_chip_type(const ComType com, const GetChipType *data) {
 	GetChipTypeReturn gctr;
 	gctr.header         = data->header;
 	gctr.header.length  = sizeof(GetChipTypeReturn);
-
 	switch(BC->options & OPTION_TYPE_MASK) {
 		case OPTION_TYPE_APA102:  gctr.chip = 102;  break;
 		case OPTION_TYPE_WS2801:  gctr.chip = 2801;  break;
@@ -316,7 +303,6 @@ void get_chip_type(const ComType com, const GetChipType *data) {
 		case OPTION_TYPE_LPD8806:  gctr.chip = 8806;  break;
 		default: break;
 	}
-
 	BA->send_blocking_with_timeout(&gctr, sizeof(GetChipTypeReturn), com);
 }
 
@@ -332,9 +318,7 @@ void get_channel_mapping(const ComType com, const GetChannelMapping *data) {
 	GetChannelMappingReturn gcmr;
 	gcmr.header        = data->header;
 	gcmr.header.length = sizeof(GetChannelMappingReturn);
-
 	gcmr.channel_mapping = BC->channel_mapping;
-
 	BA->send_blocking_with_timeout(&gcmr, sizeof(GetChannelMappingReturn), com);
 }
 
@@ -512,12 +496,7 @@ void set_rgbw_values(const ComType com, const SetRGBWValues *data) {
 		const uint8_t in[4] = {data->r[i], data->g[i], data->b[i], data->w[i]};
 		const uint8_t out[4] = {in[rm], in[gm], in[bm], in[wm]};
 		set_rgbw_by_global_index(data->index + i, out[3], out[2], out[1], out[0]);
-		//set_rgbw_by_global_index(data->index + i, data->r[i], data->g[i], data->b[i], data->w[i]);
 	}
-
-	/*for(uint8_t i = 0; i < data->length; i++) {
-		set_rgbw_by_global_index(data->index + i, data->r[i], data->g[i], data->b[i], data->w[i]);//Org
-	}*/
 	BA->com_return_setter(com, data);
 }
 void get_rgbw_values(const ComType com, const GetRGBWValues *data) {
@@ -525,14 +504,12 @@ void get_rgbw_values(const ComType com, const GetRGBWValues *data) {
 		BA->com_return_error(data, sizeof(MessageHeader), MESSAGE_ERROR_CODE_INVALID_PARAMETER, com);
 		return;
 	}
-
 	GetRGBWValuesReturn grgbwvr;
 	grgbwvr.header         = data->header;
 	grgbwvr.header.length  = sizeof(GetRGBWValuesReturn);
 	for(uint16_t i = data->index; i < data->index + data->length; i++) {
 		get_rgbw_from_global_index(i, &grgbwvr.r[i-data->index], &grgbwvr.g[i-data->index], &grgbwvr.b[i-data->index], &grgbwvr.w[i-data->index]);
 	}
-
 	BA->send_blocking_with_timeout(&grgbwvr, sizeof(GetRGBWValuesReturn), com);
 }
 
