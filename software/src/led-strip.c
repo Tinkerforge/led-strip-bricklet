@@ -88,22 +88,9 @@ ns_to_cycle(2000)
 // This fits nearly exactly in the middle of the margins found by
 // Tim: http://cpldcpu.wordpress.com/2014/01/14/light_ws2812-library-v2-0-part-i-understanding-the-ws2812/
 // It does not correspond to the datasheet!
-void bb_write_3byte_ws281x(const uint32_t value) {
-	for(int8_t i = 23; i >= 0; i--) {
-		if((value >> i) & 1) {
-			PIN_SPI_SDI.pio->PIO_CODR = PIN_SPI_SDI.mask;
-			SLEEP_THREE_CYCLES(23);
-			PIN_SPI_SDI.pio->PIO_SODR = PIN_SPI_SDI.mask;
-		} else {
-			PIN_SPI_SDI.pio->PIO_CODR = PIN_SPI_SDI.mask;
-			SLEEP_THREE_CYCLES(3);
-			PIN_SPI_SDI.pio->PIO_SODR = PIN_SPI_SDI.mask;
-			SLEEP_THREE_CYCLES(17);
-		}
-	}
-}
-void bb_write_4byte_ws281x(const uint32_t value) {
-	for(int8_t i = 31; i >= 0; i--) {
+
+void bb_write_ws281x(const uint32_t value, const int8_t byteCount) {
+	for(int8_t i = byteCount; i >= 0; i--) {
 		if((value >> i) & 1) {
 			PIN_SPI_SDI.pio->PIO_CODR = PIN_SPI_SDI.mask;
 			SLEEP_THREE_CYCLES(23);
@@ -117,38 +104,8 @@ void bb_write_4byte_ws281x(const uint32_t value) {
 	}
 }
 
-void bb_write_3byte_ws2801(const uint32_t value) {
-	for(int8_t i = 23; i >= 0; i--) {
-		if((value >> i) & 1) {
-			PIN_SPI_SDI.pio->PIO_CODR = PIN_SPI_SDI.mask;
-		} else {
-			PIN_SPI_SDI.pio->PIO_SODR = PIN_SPI_SDI.mask;
-		}
-
-		SLEEP_NS(BC->clock_delay);
-		PIN_SPI_CKI.pio->PIO_CODR = PIN_SPI_CKI.mask;
-		SLEEP_NS(BC->clock_delay);
-		PIN_SPI_CKI.pio->PIO_SODR = PIN_SPI_CKI.mask;
-	}
-}
-
-void bb_write_4byte_apa102(const uint32_t value) {
-	for(int8_t i = 31; i >= 0; i--) {
-		if((value >> i) & 1) {
-			PIN_SPI_SDI.pio->PIO_CODR = PIN_SPI_SDI.mask;
-		} else {
-			PIN_SPI_SDI.pio->PIO_SODR = PIN_SPI_SDI.mask;
-		}
-
-		SLEEP_NS(BC->clock_delay);
-		PIN_SPI_CKI.pio->PIO_CODR = PIN_SPI_CKI.mask;
-		SLEEP_NS(BC->clock_delay);
-		PIN_SPI_CKI.pio->PIO_SODR = PIN_SPI_CKI.mask;
-	}
-}
-
-void bb_write_1byte(const uint32_t value) {
-	for(int8_t i = 7; i >= 0; i--) {
+void bb_write_withClock(const uint32_t value, const int8_t byteCount) {
+	for(int8_t i = byteCount; i >= 0; i--) {
 		if((value >> i) & 1) {
 			PIN_SPI_SDI.pio->PIO_CODR = PIN_SPI_SDI.mask;
 		} else {
@@ -178,7 +135,8 @@ void set_rgb_by_global_index(uint16_t index, uint8_t r, uint8_t g, uint8_t b) {
 		return;
 	}
 
-	BrickContext *bc = BCO_DIRECT(bc_num + BC->rgb_bc_diff);
+	int8_t rgb_bc_diff = -(BS->port - 'a');
+	BrickContext *bc = BCO_DIRECT(bc_num + rgb_bc_diff);
 
 	bc->rgb.r[index] = r;
 	bc->rgb.g[index] = g;
@@ -204,7 +162,8 @@ void get_rgb_from_global_index(uint16_t index, uint8_t *r, uint8_t *g, uint8_t *
 		return;
 	}
 
-	BrickContext *bc = BCO_DIRECT(bc_num + BC->rgb_bc_diff);
+	int8_t rgb_bc_diff = -(BS->port - 'a');
+	BrickContext *bc = BCO_DIRECT(bc_num + rgb_bc_diff);
 
 	*r = bc->rgb.r[index];
 	*g = bc->rgb.g[index];
@@ -216,18 +175,55 @@ void set_rgb_values(const ComType com, const SetRGBValues *data) {
 		BA->com_return_error(data, sizeof(MessageHeader), MESSAGE_ERROR_CODE_INVALID_PARAMETER, com);
 		return;
 	}
-
 	BC->frame_length = MAX(BC->frame_length, data->index + data->length);
 	BC->options &= ~OPTION_4_CHANNELS;
-
-	for(uint8_t i = 0; i < data->length; i++) {
-		set_rgb_by_global_index(data->index + i, data->r[i], data->g[i], data->b[i]);
+	uint8_t rm = 0;
+	uint8_t gm = 1;
+	uint8_t bm = 2;
+	switch (BC->channel_mapping) {
+	case 0:
+		rm = 0;
+		gm = 1;
+		bm = 2;
+		break;
+	case 1:
+		rm = 0;
+		gm = 2;
+		bm = 1;
+		break;
+	case 2:
+		rm = 2;
+		gm = 0;
+		bm = 1;
+		break;
+	case 3:
+		rm = 2;
+		gm = 1;
+		bm = 0;
+		break;
+	case 4:
+		rm = 1;
+		gm = 0;
+		bm = 2;
+		break;
+	case 5:
+		rm = 1;
+		gm = 2;
+		bm = 0;
+		break;
+	default:
+		rm = 0;
+		gm = 1;
+		bm = 2;
+		break;
 	}
-
+	for(uint8_t i = 0; i < data->length; i++) {
+		const uint8_t in[3] = {data->r[i], data->g[i], data->b[i]};
+		const uint8_t out[3] = {in[rm], in[gm], in[bm]};
+		set_rgb_by_global_index(data->index + i, out[2], out[1], out[0]);
+	}
 	BA->com_return_setter(com, data);
 }
-
-
 
 void get_rgb_values(const ComType com, const GetRGBValues *data) {
 	if((data->index + data->length > BC->frame_max_length) || (data->length > RGB_VALUE_SIZE)) {
@@ -324,6 +320,24 @@ void get_chip_type(const ComType com, const GetChipType *data) {
 	BA->send_blocking_with_timeout(&gctr, sizeof(GetChipTypeReturn), com);
 }
 
+void set_channel_mapping(const ComType com, const SetChannelMapping *data) {
+	if(data->channel_mapping < 0 && data->channel_mapping > 29) {
+		BA->com_return_error(data, sizeof(MessageHeader), MESSAGE_ERROR_CODE_INVALID_PARAMETER, com);
+		return;
+	}
+	BC->channel_mapping = data->channel_mapping;
+	BA->com_return_setter(com, data);
+}
+void get_channel_mapping(const ComType com, const GetChannelMapping *data) {
+	GetChannelMappingReturn gcmr;
+	gcmr.header        = data->header;
+	gcmr.header.length = sizeof(GetChannelMappingReturn);
+
+	gcmr.channel_mapping = BC->channel_mapping;
+
+	BA->send_blocking_with_timeout(&gcmr, sizeof(GetChannelMappingReturn), com);
+}
+
 void set_rgbw_values(const ComType com, const SetRGBWValues *data) {
 	if((data->index + data->length > BC->frame_max_length) || (data->length > RGBW_VALUE_SIZE)) {
 		BA->com_return_error(data, sizeof(MessageHeader), MESSAGE_ERROR_CODE_INVALID_PARAMETER, com);
@@ -332,11 +346,178 @@ void set_rgbw_values(const ComType com, const SetRGBWValues *data) {
 
 	BC->frame_length = MAX(BC->frame_length, data->index + data->length);
 	BC->options |= OPTION_4_CHANNELS;
-
+	uint8_t rm = 0;
+	uint8_t gm = 1;
+	uint8_t bm = 2;
+	uint8_t wm = 3;
+	switch (BC->channel_mapping) {
+	case 0:
+	case 6:
+		rm = 0;
+		gm = 1;
+		bm = 2;
+		wm = 3;
+		break;
+	case 1:
+	case 8:
+		rm = 0;
+		gm = 2;
+		bm = 1;
+		wm = 3;
+		break;
+	case 2:
+	case 18:
+		rm = 2;
+		gm = 0;
+		bm = 1;
+		wm = 3;
+		break;
+	case 3:
+	case 20:
+		rm = 2;
+		gm = 1;
+		bm = 0;
+		wm = 3;
+		break;
+	case 4:
+	case 13:
+		rm = 1;
+		gm = 0;
+		bm = 2;
+		wm = 3;
+		break;
+	case 5:
+	case 15:
+		rm = 1;
+		gm = 2;
+		bm = 0;
+		wm = 3;
+		break;
+	case 7:
+		rm = 0;
+		gm = 1;
+		bm = 3;
+		wm = 2;
+		break;
+	case 9:
+		rm = 0;
+		gm = 2;
+		bm = 3;
+		wm = 1;
+		break;
+	case 10:
+		rm = 0;
+		gm = 3;
+		bm = 1;
+		wm = 2;
+		break;
+	case 11:
+		rm = 0;
+		gm = 3;
+		bm = 2;
+		wm = 1;
+		break;
+	case 12:
+		rm = 1;
+		gm = 0;
+		bm = 3;
+		wm = 2;
+		break;
+	case 14:
+		rm = 1;
+		gm = 2;
+		bm = 3;
+		wm = 0;
+		break;
+	case 16:
+		rm = 1;
+		gm = 3;
+		bm = 2;
+		wm = 0;
+		break;
+	case 17:
+		rm = 1;
+		gm = 3;
+		bm = 0;
+		wm = 2;
+		break;
+	case 19:
+		rm = 2;
+		gm = 0;
+		bm = 3;
+		wm = 1;
+		break;
+	case 21:
+		rm = 2;
+		gm = 1;
+		bm = 3;
+		wm = 0;
+		break;
+	case 22:
+		rm = 2;
+		gm = 3;
+		bm = 0;
+		wm = 1;
+		break;
+	case 23:
+		rm = 2;
+		gm = 3;
+		bm = 1;
+		wm = 0;
+		break;
+	case 24:
+		rm = 3;
+		gm = 0;
+		bm = 2;
+		wm = 1;
+		break;
+	case 25:
+		rm = 3;
+		gm = 0;
+		bm = 1;
+		wm = 2;
+		break;
+	case 26:
+		rm = 3;
+		gm = 1;
+		bm = 2;
+		wm = 0;
+		break;
+	case 27:
+		rm = 3;
+		gm = 1;
+		bm = 0;
+		wm = 2;
+		break;
+	case 28:
+		rm = 3;
+		gm = 2;
+		bm = 1;
+		wm = 0;
+		break;
+	case 29:
+		rm = 3;
+		gm = 2;
+		bm = 0;
+		wm = 1;
+		break;
+	default:
+		rm = 0;
+		gm = 1;
+		bm = 2;
+		wm = 3;
+		break;
+	}
 	for(uint8_t i = 0; i < data->length; i++) {
-		set_rgbw_by_global_index(data->index + i, data->r[i], data->g[i], data->b[i], data->w[i]);
+		const uint8_t in[4] = {data->r[i], data->g[i], data->b[i], data->w[i]};
+		const uint8_t out[4] = {in[rm], in[gm], in[bm], in[wm]};
+		set_rgbw_by_global_index(data->index + i, out[3], out[2], out[1], out[0]);
+		//set_rgbw_by_global_index(data->index + i, data->r[i], data->g[i], data->b[i], data->w[i]);
 	}
 
+	/*for(uint8_t i = 0; i < data->length; i++) {
+		set_rgbw_by_global_index(data->index + i, data->r[i], data->g[i], data->b[i], data->w[i]);//Org
+	}*/
 	BA->com_return_setter(com, data);
 }
 void get_rgbw_values(const ComType com, const GetRGBWValues *data) {
@@ -371,7 +552,8 @@ void get_rgbw_from_global_index(uint16_t index, uint8_t *r, uint8_t *g, uint8_t 
 		return;
 	}
 
-	BrickContext *bc = BCO_DIRECT(bc_num + BC->rgb_bc_diff);
+	int8_t rgb_bc_diff = -(BS->port - 'a');
+	BrickContext *bc = BCO_DIRECT(bc_num + rgb_bc_diff);
 
 	*r = bc->rgbw.r[index];
 	*g = bc->rgbw.g[index];
@@ -395,7 +577,8 @@ void set_rgbw_by_global_index(uint16_t index, uint8_t r, uint8_t g, uint8_t b, u
 		return;
 	}
 
-	BrickContext *bc = BCO_DIRECT(bc_num + BC->rgb_bc_diff);
+	int8_t rgb_bc_diff = -(BS->port - 'a');
+	BrickContext *bc = BCO_DIRECT(bc_num + rgb_bc_diff);
 
 	bc->rgbw.r[index] = r;
 	bc->rgbw.g[index] = g;
@@ -462,6 +645,15 @@ void invocation(const ComType com, const uint8_t *data) {
 			get_rgbw_values(com, (GetRGBWValues*)data);
 			return;
 		}
+		case FID_SET_CHANNEL_MAPPING: {
+			set_channel_mapping(com, (SetChannelMapping*)data);
+			return;
+		}
+
+		case FID_GET_CHANNEL_MAPPING: {
+			get_channel_mapping(com, (GetChannelMapping*)data);
+			return;
+		}
 
 		default: {
 			BA->com_return_error(data, sizeof(MessageHeader), MESSAGE_ERROR_CODE_NOT_SUPPORTED, com);
@@ -471,9 +663,9 @@ void invocation(const ComType com, const uint8_t *data) {
 }
 
 void reconfigure_bcs(void) {
-	BC->rgb_bc_diff = -(BS->port - 'a');
+	int8_t rgb_bc_diff = -(BS->port - 'a');
 
-	if(BSO_DIRECT(BC->rgb_bc_diff+1)->address == I2C_EEPROM_ADDRESS_HIGH) {
+	if(BSO_DIRECT(rgb_bc_diff+1)->address == I2C_EEPROM_ADDRESS_HIGH) {
 		BC->rgb_length = 4;
 	} else {
 		BC->rgb_length = 2;
@@ -518,7 +710,7 @@ void option_ws2801(void) {
 		uint8_t b = 0;
 
 		get_rgb_from_global_index(i, &r, &g, &b);
-		bb_write_3byte_ws2801((b << 16) | (g << 8) | r);
+		bb_write_withClock((b << 16) | (g << 8) | r, BYTES_3);
 	}
 }
 
@@ -531,12 +723,12 @@ void option_ws281x(void) {
 	if (BC->options & OPTION_4_CHANNELS) {
 		for(uint16_t i = 0; i < BC->frame_length; i++) {
 			get_rgbw_from_global_index(i, &r, &g, &b, &w);
-			bb_write_4byte_ws281x((b << 24) | (g << 16) | (r << 8) | w);
+			bb_write_ws281x((b << 24) | (g << 16) | (r << 8) | w, BYTES_4);
 		};
 	} else {
 		for(uint16_t i = 0; i < BC->frame_length; i++) {
 			get_rgb_from_global_index(i, &r, &g, &b);
-			bb_write_3byte_ws281x((b << 16) | (g << 8) | r);
+			bb_write_ws281x((b << 16) | (g << 8) | r, BYTES_3);
 		}
 	}
 }
@@ -553,18 +745,18 @@ void option_lpd8806(void) {
 		uint8_t r_tmp = r/2+128;
 		uint8_t g_tmp = g/2+128;
 		uint8_t b_tmp = b/2+128;
-		bb_write_3byte_ws2801((b_tmp << 16) | (g_tmp << 8) | r_tmp);
+		bb_write_withClock((b_tmp << 16) | (g_tmp << 8) | r_tmp, BYTES_3);
 	}
 
 	// When MSB is low the shift registers resets and are ready for new data
-	bb_write_3byte_ws2801((0 << 16) | (0 << 8) | 0);
+	bb_write_withClock((0 << 16) | (0 << 8) | 0, BYTES_3);
 }
 
 void option_apa102(void) {
-	bb_write_1byte((0 << 8) | 0);
-	bb_write_1byte((0 << 8) | 0);
-	bb_write_1byte((0 << 8) | 0);
-	bb_write_1byte((0 << 8) | 0);
+	bb_write_withClock((0 << 8) | 0, BYTES_1);
+	bb_write_withClock((0 << 8) | 0, BYTES_1);
+	bb_write_withClock((0 << 8) | 0, BYTES_1);
+	bb_write_withClock((0 << 8) | 0, BYTES_1);
 
 	for(uint16_t i = 0; i < BC->frame_length; i++) {
 		uint8_t r = 0;
@@ -575,7 +767,7 @@ void option_apa102(void) {
 
 		// 3-Bit "1" and brightness setting 5-Bit: constant current output value
 		brightness |= 0b11100000;
-		bb_write_4byte_apa102((brightness << 24) | (r << 16) | (g << 8) | b);
+		bb_write_withClock((brightness << 24) | (r << 16) | (g << 8) | b, BYTES_4);
 	}
 	// The datasheet says that there have to be a 4-byte endframe, but it should
 	// be left out because the endframe is not different to another LED with RGB
@@ -589,13 +781,14 @@ void tick(const uint8_t tick_type) {
 
 	if(tick_type & TICK_TASK_TYPE_CALCULATION) {
 		if(BC->bcs == 0) {
+			int8_t rgb_bc_diff = -(BS->port - 'a');
 			for(uint8_t i = 0; i < BC->rgb_length; i++) {
-				if(BSO_DIRECT(i + BC->rgb_bc_diff)->device_identifier == 0) {
+				if(BSO_DIRECT(i + rgb_bc_diff)->device_identifier == 0) {
 					BC->bcs |= 1 << i;
 					BC->frame_max_length += RGB_LENGTH;
 				}
 			}
-			BC->bcs |= 1 << ABS(BC->rgb_bc_diff);
+			BC->bcs |= 1 << ABS(rgb_bc_diff);
 		}
 
 		if(BC->frame_set_counter > 0) {

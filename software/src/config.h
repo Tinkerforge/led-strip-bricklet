@@ -60,14 +60,13 @@ typedef struct {
 		RGB rgb;
 		RGBW rgbw;
 	};
-
 	uint16_t frame_duration;
 	uint16_t frame_counter;
 	uint16_t frame_set_counter;
 	uint16_t frame_length;
 	uint16_t frame_max_length;
 	uint16_t clock_delay;
-	int8_t rgb_bc_diff;
+	uint8_t channel_mapping;
 	uint8_t rgb_length;
 	uint8_t bcs;
 	uint8_t options;

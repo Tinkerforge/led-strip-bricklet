@@ -62,6 +62,12 @@
 #define FID_GET_CHIP_TYPE       10
 #define FID_SET_RGBW_VALUES     11
 #define FID_GET_RGBW_VALUES     12
+#define FID_SET_CHANNEL_MAPPING 13
+#define FID_GET_CHANNEL_MAPPING 14
+
+#define BYTES_1   7
+#define BYTES_3  23
+#define BYTES_4  31
 
 typedef struct {
 	uint8_t r[RGB_LENGTH];
@@ -179,6 +185,20 @@ typedef struct {
 	uint8_t w[RGBW_VALUE_SIZE];
 } __attribute__((__packed__)) GetRGBWValuesReturn;
 
+typedef struct {
+	MessageHeader header;
+	uint8_t channel_mapping;
+} __attribute__((__packed__)) SetChannelMapping;
+
+typedef struct {
+	MessageHeader header;
+} __attribute__((__packed__)) GetChannelMapping;
+
+typedef struct {
+	MessageHeader header;
+	uint8_t channel_mapping;
+} __attribute__((__packed__)) GetChannelMappingReturn;
+
 void set_rgb_values(const ComType com, const SetRGBValues *data);
 void get_rgb_values(const ComType com, const GetRGBValues *data);
 void set_frame_duration(const ComType com, const SetFrameDuration *data);
@@ -190,12 +210,11 @@ void set_chip_type(const ComType com, const SetChipType *data);
 void get_chip_type(const ComType com, const GetChipType *data);
 void set_rgbw_values(const ComType com, const SetRGBWValues *data);
 void get_rgbw_values(const ComType com, const GetRGBWValues *data);
+void set_channel_mapping(const ComType com, const SetChannelMapping *data);
+void get_channel_mapping(const ComType com, const GetChannelMapping *data);
 
-void bb_write_3byte_ws2801(const uint32_t value);
-void bb_write_3byte_ws281x(const uint32_t value);
-void bb_write_4byte_ws281x(const uint32_t value);
-void bb_write_4byte_apa102(const uint32_t value);
-void bb_write_1byte(const uint32_t value);
+void bb_write_ws281x(const uint32_t value, const int8_t byteCount);
+void bb_write_withClock(const uint32_t value, const int8_t byteCount);
 
 void option_ws2801(void);
 void option_ws281x(void);
