@@ -172,41 +172,41 @@ void set_rgb_values(const ComType com, const SetRGBValues *data) {
 	uint8_t bm = 2;
 
 	switch (BC->channel_mapping) {
-	case 0:
-		rm = 0;
-		gm = 1;
-		bm = 2;
-		break;
-	case 1:
-		rm = 0;
-		gm = 2;
-		bm = 1;
-		break;
-	case 2:
-		rm = 2;
-		gm = 0;
-		bm = 1;
-		break;
-	case 3:
-		rm = 2;
-		gm = 1;
-		bm = 0;
-		break;
-	case 4:
-		rm = 1;
-		gm = 0;
-		bm = 2;
-		break;
-	case 5:
-		rm = 1;
-		gm = 2;
-		bm = 0;
-		break;
-	default:
-		rm = 0;
-		gm = 1;
-		bm = 2;
-		break;
+	case CHANNEL_MAPPING_RGB:
+	case CHANNEL_MAPPING_RGBW:
+	case CHANNEL_MAPPING_RGWB:
+	case CHANNEL_MAPPING_RWGB:
+	case CHANNEL_MAPPING_WRGB: rm = 0; gm = 1; bm = 2; break;
+
+	case CHANNEL_MAPPING_RBG:
+	case CHANNEL_MAPPING_RBGW:
+	case CHANNEL_MAPPING_RBWG:
+	case CHANNEL_MAPPING_RWBG:
+	case CHANNEL_MAPPING_WRBG: rm = 0; gm = 2; bm = 1; break;
+
+	case CHANNEL_MAPPING_BRG:
+	case CHANNEL_MAPPING_BRGW:
+	case CHANNEL_MAPPING_BRWG:
+	case CHANNEL_MAPPING_BWRG:
+	case CHANNEL_MAPPING_WBRG: rm = 2; gm = 0; bm = 1; break;
+
+	case CHANNEL_MAPPING_BGR:
+	case CHANNEL_MAPPING_BGRW:
+	case CHANNEL_MAPPING_BGWR:
+	case CHANNEL_MAPPING_BWGR:
+	case CHANNEL_MAPPING_WBGR: rm = 2; gm = 1; bm = 0; break;
+
+	case CHANNEL_MAPPING_GRB:
+	case CHANNEL_MAPPING_GRBW:
+	case CHANNEL_MAPPING_GRWB:
+	case CHANNEL_MAPPING_GWRB:
+	case CHANNEL_MAPPING_WGRB: rm = 1; gm = 0; bm = 2; break;
+
+	case CHANNEL_MAPPING_GBR:
+	case CHANNEL_MAPPING_GBRW:
+	case CHANNEL_MAPPING_GBWR:
+	case CHANNEL_MAPPING_GWBR:
+	case CHANNEL_MAPPING_WGBR: rm = 1; gm = 2; bm = 0; break;
 	}
 
 	for(uint8_t i = 0; i < data->length; i++) {
@@ -342,162 +342,36 @@ void set_rgbw_values(const ComType com, const SetRGBWValues *data) {
 	uint8_t wm = 3;
 
 	switch (BC->channel_mapping) {
-	case 0:
-	case 6:
-		rm = 0;
-		gm = 1;
-		bm = 2;
-		wm = 3;
-		break;
-	case 1:
-	case 8:
-		rm = 0;
-		gm = 2;
-		bm = 1;
-		wm = 3;
-		break;
-	case 2:
-	case 18:
-		rm = 2;
-		gm = 0;
-		bm = 1;
-		wm = 3;
-		break;
-	case 3:
-	case 20:
-		rm = 2;
-		gm = 1;
-		bm = 0;
-		wm = 3;
-		break;
-	case 4:
-	case 13:
-		rm = 1;
-		gm = 0;
-		bm = 2;
-		wm = 3;
-		break;
-	case 5:
-	case 15:
-		rm = 1;
-		gm = 2;
-		bm = 0;
-		wm = 3;
-		break;
-	case 7:
-		rm = 0;
-		gm = 1;
-		bm = 3;
-		wm = 2;
-		break;
-	case 9:
-		rm = 0;
-		gm = 2;
-		bm = 3;
-		wm = 1;
-		break;
-	case 10:
-		rm = 0;
-		gm = 3;
-		bm = 1;
-		wm = 2;
-		break;
-	case 11:
-		rm = 0;
-		gm = 3;
-		bm = 2;
-		wm = 1;
-		break;
-	case 12:
-		rm = 1;
-		gm = 0;
-		bm = 3;
-		wm = 2;
-		break;
-	case 14:
-		rm = 1;
-		gm = 2;
-		bm = 3;
-		wm = 0;
-		break;
-	case 16:
-		rm = 1;
-		gm = 3;
-		bm = 2;
-		wm = 0;
-		break;
-	case 17:
-		rm = 1;
-		gm = 3;
-		bm = 0;
-		wm = 2;
-		break;
-	case 19:
-		rm = 2;
-		gm = 0;
-		bm = 3;
-		wm = 1;
-		break;
-	case 21:
-		rm = 2;
-		gm = 1;
-		bm = 3;
-		wm = 0;
-		break;
-	case 22:
-		rm = 2;
-		gm = 3;
-		bm = 0;
-		wm = 1;
-		break;
-	case 23:
-		rm = 2;
-		gm = 3;
-		bm = 1;
-		wm = 0;
-		break;
-	case 24:
-		rm = 3;
-		gm = 0;
-		bm = 2;
-		wm = 1;
-		break;
-	case 25:
-		rm = 3;
-		gm = 0;
-		bm = 1;
-		wm = 2;
-		break;
-	case 26:
-		rm = 3;
-		gm = 1;
-		bm = 2;
-		wm = 0;
-		break;
-	case 27:
-		rm = 3;
-		gm = 1;
-		bm = 0;
-		wm = 2;
-		break;
-	case 28:
-		rm = 3;
-		gm = 2;
-		bm = 1;
-		wm = 0;
-		break;
-	case 29:
-		rm = 3;
-		gm = 2;
-		bm = 0;
-		wm = 1;
-		break;
-	default:
-		rm = 0;
-		gm = 1;
-		bm = 2;
-		wm = 3;
-		break;
+	case CHANNEL_MAPPING_RGB:
+	case CHANNEL_MAPPING_RGBW: rm = 0; gm = 1; bm = 2; wm = 3; break;
+	case CHANNEL_MAPPING_RBG:
+	case CHANNEL_MAPPING_RBGW: rm = 0; gm = 2; bm = 1; wm = 3; break;
+	case CHANNEL_MAPPING_BRG:
+	case CHANNEL_MAPPING_BRGW: rm = 2; gm = 0; bm = 1; wm = 3; break;
+	case CHANNEL_MAPPING_BGR:
+	case CHANNEL_MAPPING_BGRW: rm = 2; gm = 1; bm = 0; wm = 3; break;
+	case CHANNEL_MAPPING_GRB:
+	case CHANNEL_MAPPING_GRBW: rm = 1; gm = 0; bm = 2; wm = 3; break;
+	case CHANNEL_MAPPING_GBR:
+	case CHANNEL_MAPPING_GBRW: rm = 1; gm = 2; bm = 0; wm = 3; break;
+	case CHANNEL_MAPPING_RGWB: rm = 0; gm = 1; bm = 3; wm = 2; break;
+	case CHANNEL_MAPPING_RBWG: rm = 0; gm = 2; bm = 3; wm = 1; break;
+	case CHANNEL_MAPPING_RWGB: rm = 0; gm = 3; bm = 1; wm = 2; break;
+	case CHANNEL_MAPPING_RWBG: rm = 0; gm = 3; bm = 2; wm = 1; break;
+	case CHANNEL_MAPPING_GRWB: rm = 1; gm = 0; bm = 3; wm = 2; break;
+	case CHANNEL_MAPPING_GBWR: rm = 1; gm = 2; bm = 3; wm = 0; break;
+	case CHANNEL_MAPPING_GWBR: rm = 1; gm = 3; bm = 2; wm = 0; break;
+	case CHANNEL_MAPPING_GWRB: rm = 1; gm = 3; bm = 0; wm = 2; break;
+	case CHANNEL_MAPPING_BRWG: rm = 2; gm = 0; bm = 3; wm = 1; break;
+	case CHANNEL_MAPPING_BGWR: rm = 2; gm = 1; bm = 3; wm = 0; break;
+	case CHANNEL_MAPPING_BWRG: rm = 2; gm = 3; bm = 0; wm = 1; break;
+	case CHANNEL_MAPPING_BWGR: rm = 2; gm = 3; bm = 1; wm = 0; break;
+	case CHANNEL_MAPPING_WRBG: rm = 3; gm = 0; bm = 2; wm = 1; break;
+	case CHANNEL_MAPPING_WRGB: rm = 3; gm = 0; bm = 1; wm = 2; break;
+	case CHANNEL_MAPPING_WGBR: rm = 3; gm = 1; bm = 2; wm = 0; break;
+	case CHANNEL_MAPPING_WGRB: rm = 3; gm = 1; bm = 0; wm = 2; break;
+	case CHANNEL_MAPPING_WBGR: rm = 3; gm = 2; bm = 1; wm = 0; break;
+	case CHANNEL_MAPPING_WBRG: rm = 3; gm = 2; bm = 0; wm = 1; break;
 	}
 
 	for(uint8_t i = 0; i < data->length; i++) {
