@@ -163,11 +163,14 @@ void set_rgb_values(const ComType com, const SetRGBValues *data) {
 		BA->com_return_error(data, sizeof(MessageHeader), MESSAGE_ERROR_CODE_INVALID_PARAMETER, com);
 		return;
 	}
+
 	BC->frame_length = MAX(BC->frame_length, data->index + data->length);
 	BC->options &= ~OPTION_4_CHANNELS;
+
 	uint8_t rm = 0;
 	uint8_t gm = 1;
 	uint8_t bm = 2;
+
 	switch (BC->channel_mapping) {
 	case 0:
 		rm = 0;
@@ -223,9 +226,11 @@ void get_rgb_values(const ComType com, const GetRGBValues *data) {
 	GetRGBValuesReturn grgbvr;
 	grgbvr.header         = data->header;
 	grgbvr.header.length  = sizeof(GetRGBValuesReturn);
+
 	for(uint16_t i = data->index; i < data->index + data->length; i++) {
 		get_rgb_from_global_index(i, &grgbvr.r[i-data->index], &grgbvr.g[i-data->index], &grgbvr.b[i-data->index]);
 	}
+
 	BA->send_blocking_with_timeout(&grgbvr, sizeof(GetRGBValuesReturn), com);
 }
 
@@ -277,12 +282,13 @@ void set_chip_type(const ComType com, const SetChipType *data) {
 
 	switch(data->chip) {
 		case 102:  BC->options = (BC->options & (~OPTION_TYPE_MASK)) | OPTION_TYPE_APA102;  break;
-		case 2801:  BC->options = (BC->options & (~OPTION_TYPE_MASK)) | OPTION_TYPE_WS2801;  break;
-		case 2811:  BC->options = (BC->options & (~OPTION_TYPE_MASK)) | OPTION_TYPE_WS2811;  break;
-		case 2812:  BC->options = (BC->options & (~OPTION_TYPE_MASK)) | OPTION_TYPE_WS2812;  break;
-		case 8806:  BC->options = (BC->options & (~OPTION_TYPE_MASK)) | OPTION_TYPE_LPD8806;  break;
+		case 2801: BC->options = (BC->options & (~OPTION_TYPE_MASK)) | OPTION_TYPE_WS2801;  break;
+		case 2811: BC->options = (BC->options & (~OPTION_TYPE_MASK)) | OPTION_TYPE_WS2811;  break;
+		case 2812: BC->options = (BC->options & (~OPTION_TYPE_MASK)) | OPTION_TYPE_WS2812;  break;
+		case 8806: BC->options = (BC->options & (~OPTION_TYPE_MASK)) | OPTION_TYPE_LPD8806; break;
 		default: break;
 	}
+
 	BA->com_return_setter(com, data);
 }
 
@@ -290,14 +296,16 @@ void get_chip_type(const ComType com, const GetChipType *data) {
 	GetChipTypeReturn gctr;
 	gctr.header         = data->header;
 	gctr.header.length  = sizeof(GetChipTypeReturn);
+
 	switch(BC->options & OPTION_TYPE_MASK) {
 		case OPTION_TYPE_APA102:  gctr.chip = 102;  break;
-		case OPTION_TYPE_WS2801:  gctr.chip = 2801;  break;
-		case OPTION_TYPE_WS2811:  gctr.chip = 2811;  break;
-		case OPTION_TYPE_WS2812:  gctr.chip = 2812;  break;
-		case OPTION_TYPE_LPD8806:  gctr.chip = 8806;  break;
+		case OPTION_TYPE_WS2801:  gctr.chip = 2801; break;
+		case OPTION_TYPE_WS2811:  gctr.chip = 2811; break;
+		case OPTION_TYPE_WS2812:  gctr.chip = 2812; break;
+		case OPTION_TYPE_LPD8806: gctr.chip = 8806; break;
 		default: break;
 	}
+
 	BA->send_blocking_with_timeout(&gctr, sizeof(GetChipTypeReturn), com);
 }
 
@@ -306,9 +314,11 @@ void set_channel_mapping(const ComType com, const SetChannelMapping *data) {
 		BA->com_return_error(data, sizeof(MessageHeader), MESSAGE_ERROR_CODE_INVALID_PARAMETER, com);
 		return;
 	}
+
 	BC->channel_mapping = data->channel_mapping;
 	BA->com_return_setter(com, data);
 }
+
 void get_channel_mapping(const ComType com, const GetChannelMapping *data) {
 	GetChannelMappingReturn gcmr;
 	gcmr.header        = data->header;
@@ -325,10 +335,12 @@ void set_rgbw_values(const ComType com, const SetRGBWValues *data) {
 
 	BC->frame_length = MAX(BC->frame_length, data->index + data->length);
 	BC->options |= OPTION_4_CHANNELS;
+
 	uint8_t rm = 0;
 	uint8_t gm = 1;
 	uint8_t bm = 2;
 	uint8_t wm = 3;
+
 	switch (BC->channel_mapping) {
 	case 0:
 	case 6:
@@ -501,12 +513,15 @@ void get_rgbw_values(const ComType com, const GetRGBWValues *data) {
 		BA->com_return_error(data, sizeof(MessageHeader), MESSAGE_ERROR_CODE_INVALID_PARAMETER, com);
 		return;
 	}
+
 	GetRGBWValuesReturn grgbwvr;
 	grgbwvr.header         = data->header;
 	grgbwvr.header.length  = sizeof(GetRGBWValuesReturn);
+
 	for(uint16_t i = data->index; i < data->index + data->length; i++) {
 		get_rgbw_from_global_index(i, &grgbwvr.r[i-data->index], &grgbwvr.g[i-data->index], &grgbwvr.b[i-data->index], &grgbwvr.w[i-data->index]);
 	}
+
 	BA->send_blocking_with_timeout(&grgbwvr, sizeof(GetRGBWValuesReturn), com);
 }
 
