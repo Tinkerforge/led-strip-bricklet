@@ -117,47 +117,41 @@ void bb_write_withClock(const uint32_t value, const int8_t byteCount) {
 	}
 }
 
-void set_rgb_by_global_index(uint16_t index, uint8_t r, uint8_t g, uint8_t b) {
+BrickContext *get_bc_from_global_index(uint16_t *index, uint8_t block_length) {
 	uint8_t bc_num = 0;
-	for(; bc_num < 4; bc_num++) {
-		if(BC->bcs & (1 << bc_num)) {
-			if(index >= RGB_LENGTH) {
-				index -= RGB_LENGTH;
+
+	for (; bc_num < 4; bc_num++) {
+		if (BC->bcs & (1 << bc_num)) {
+			if (*index >= RGBW_LENGTH) {
+				*index -= RGBW_LENGTH;
 			} else {
 				break;
 			}
 		}
 	}
-	if(index > RGB_LENGTH) {
-		return;
+
+	if (*index > block_length) {
+		return NULL;
 	}
 
 	int8_t rgb_bc_diff = -(BS->port - 'a');
-	BrickContext *bc = BCO_DIRECT(bc_num + rgb_bc_diff);
+
+	return BCO_DIRECT(bc_num + rgb_bc_diff);
+}
+
+void set_rgb_by_global_index(uint16_t index, uint8_t r, uint8_t g, uint8_t b) {
+	BrickContext *bc = get_bc_from_global_index(&index, RGB_LENGTH);
 
 	bc->rgb.r[index] = r;
 	bc->rgb.g[index] = g;
 	bc->rgb.b[index] = b;
+
 	BC->options |= OPTION_DATA_CHANGED;
 	BC->options |= OPTION_DATA_ONE_MORE;
 }
 
 void get_rgb_from_global_index(uint16_t index, uint8_t *r, uint8_t *g, uint8_t *b) {
-	uint8_t bc_num = 0;
-	for(; bc_num < 4; bc_num++) {
-		if(BC->bcs & (1 << bc_num)) {
-			if(index >= RGB_LENGTH) {
-				index -= RGB_LENGTH;
-			} else {
-				break;
-			}
-		}
-	}
-	if(index > RGB_LENGTH) {
-		return;
-	}
-	int8_t rgb_bc_diff = -(BS->port - 'a');
-	BrickContext *bc = BCO_DIRECT(bc_num + rgb_bc_diff);
+	BrickContext *bc = get_bc_from_global_index(&index, RGB_LENGTH);
 
 	*r = bc->rgb.r[index];
 	*g = bc->rgb.g[index];
@@ -211,11 +205,12 @@ void set_rgb_values(const ComType com, const SetRGBValues *data) {
 		bm = 2;
 		break;
 	}
+
 	for(uint8_t i = 0; i < data->length; i++) {
 		const uint8_t in[3] = {data->r[i], data->g[i], data->b[i]};
-		const uint8_t out[3] = {in[rm], in[gm], in[bm]};
-		set_rgb_by_global_index(data->index + i, out[2], out[1], out[0]);
+		set_rgb_by_global_index(data->index + i, in[rm], in[gm], in[bm]);
 	}
+
 	BA->com_return_setter(com, data);
 }
 
@@ -492,13 +487,15 @@ void set_rgbw_values(const ComType com, const SetRGBWValues *data) {
 		wm = 3;
 		break;
 	}
+
 	for(uint8_t i = 0; i < data->length; i++) {
 		const uint8_t in[4] = {data->r[i], data->g[i], data->b[i], data->w[i]};
-		const uint8_t out[4] = {in[rm], in[gm], in[bm], in[wm]};
-		set_rgbw_by_global_index(data->index + i, out[3], out[2], out[1], out[0]);
+		set_rgbw_by_global_index(data->index + i, in[rm], in[gm], in[bm], in[wm]);
 	}
+
 	BA->com_return_setter(com, data);
 }
+
 void get_rgbw_values(const ComType com, const GetRGBWValues *data) {
 	if((data->index + data->length > BC->frame_max_length) || (data->length > RGBW_VALUE_SIZE)) {
 		BA->com_return_error(data, sizeof(MessageHeader), MESSAGE_ERROR_CODE_INVALID_PARAMETER, com);
@@ -514,23 +511,7 @@ void get_rgbw_values(const ComType com, const GetRGBWValues *data) {
 }
 
 void get_rgbw_from_global_index(uint16_t index, uint8_t *r, uint8_t *g, uint8_t *b, uint8_t *w) {
-	uint8_t bc_num = 0;
-	for(; bc_num < 4; bc_num++) {
-		if(BC->bcs & (1 << bc_num)) {
-			if(index >= RGBW_LENGTH) {
-				index -= RGBW_LENGTH;
-			} else {
-				break;
-			}
-		}
-	}
-
-	if(index > RGBW_LENGTH) {
-		return;
-	}
-
-	int8_t rgb_bc_diff = -(BS->port - 'a');
-	BrickContext *bc = BCO_DIRECT(bc_num + rgb_bc_diff);
+	BrickContext *bc = get_bc_from_global_index(&index, RGBW_LENGTH);
 
 	*r = bc->rgbw.r[index];
 	*g = bc->rgbw.g[index];
@@ -539,23 +520,7 @@ void get_rgbw_from_global_index(uint16_t index, uint8_t *r, uint8_t *g, uint8_t 
 }
 
 void set_rgbw_by_global_index(uint16_t index, uint8_t r, uint8_t g, uint8_t b, uint8_t w) {
-	uint8_t bc_num = 0;
-	for(; bc_num < 4; bc_num++) {
-		if(BC->bcs & (1 << bc_num)) {
-			if(index >= RGBW_LENGTH) {
-				index -= RGBW_LENGTH;
-			} else {
-				break;
-			}
-		}
-	}
-
-	if(index > RGBW_LENGTH) {
-		return;
-	}
-
-	int8_t rgb_bc_diff = -(BS->port - 'a');
-	BrickContext *bc = BCO_DIRECT(bc_num + rgb_bc_diff);
+	BrickContext *bc = get_bc_from_global_index(&index, RGBW_LENGTH);
 
 	bc->rgbw.r[index] = r;
 	bc->rgbw.g[index] = g;
@@ -639,19 +604,6 @@ void invocation(const ComType com, const uint8_t *data) {
 	}
 }
 
-void reconfigure_bcs(void) {
-	int8_t rgb_bc_diff = -(BS->port - 'a');
-
-	if(BSO_DIRECT(rgb_bc_diff+1)->address == I2C_EEPROM_ADDRESS_HIGH) {
-		BC->rgb_length = 4;
-	} else {
-		BC->rgb_length = 2;
-	}
-
-	BC->frame_max_length = RGB_LENGTH;
-	BC->bcs = 0;
-}
-
 void constructor(void) {
 	_Static_assert(sizeof(BrickContext) <= BRICKLET_CONTEXT_MAX_SIZE, "BrickContext too big");
 	adc_channel_enable(BS->adc_channel);
@@ -677,7 +629,8 @@ void constructor(void) {
 	BC->clock_delay = 300;
 
 	BC->options = 0; // Frame rendered = false, Chip Type = WS2801
-	reconfigure_bcs();
+	BC->frame_max_length = RGB_LENGTH;
+	BC->bcs = 0;
 }
 
 void option_ws2801(void) {
@@ -752,45 +705,55 @@ void option_apa102(void) {
 }
 
 void tick(const uint8_t tick_type) {
-	if(BC->frame_duration == 0) {
+	BrickContext *bc = BC;
+
+	if(bc->frame_duration == 0) {
 		return;
 	}
 
 	if(tick_type & TICK_TASK_TYPE_CALCULATION) {
-		if(BC->bcs == 0) {
+		if(bc->bcs == 0) {
 			int8_t rgb_bc_diff = -(BS->port - 'a');
-			for(uint8_t i = 0; i < BC->rgb_length; i++) {
+			uint8_t rgb_length;
+
+			if(BSO_DIRECT(rgb_bc_diff+1)->address == I2C_EEPROM_ADDRESS_HIGH) {
+				rgb_length = 4;
+			} else {
+				rgb_length = 2;
+			}
+
+			for(uint8_t i = 0; i < rgb_length; i++) {
 				if(BSO_DIRECT(i + rgb_bc_diff)->device_identifier == 0) {
-					BC->bcs |= 1 << i;
-					BC->frame_max_length += RGB_LENGTH;
+					bc->bcs |= 1 << i;
+					bc->frame_max_length += RGB_LENGTH;
 				}
 			}
-			BC->bcs |= 1 << ABS(rgb_bc_diff);
+			bc->bcs |= 1 << ABS(rgb_bc_diff);
 		}
 
-		if(BC->frame_set_counter > 0) {
-			BC->frame_set_counter--;
-			if(BC->frame_set_counter == 0) {
-				if(BC->frame_length > 0) {
-					BC->options |= OPTION_FRAME_RENDERED;
+		if(bc->frame_set_counter > 0) {
+			bc->frame_set_counter--;
+			if(bc->frame_set_counter == 0) {
+				if(bc->frame_length > 0) {
+					bc->options |= OPTION_FRAME_RENDERED;
 				}
 			}
 			return;
 		}
 
-		BC->frame_counter++;
-		if(BC->frame_counter >= BC->frame_duration-2) { // TODO: Calculate time to write data!
-			BC->frame_counter = 0;
-			BC->frame_set_counter = 2;
-			if(BC->frame_length > 0) {
-				if(BC->options & OPTION_DATA_CHANGED) {
-					if(BC->options & OPTION_DATA_ONE_MORE) {
-						BC->options = BC->options & (~OPTION_DATA_ONE_MORE);
+		bc->frame_counter++;
+		if(bc->frame_counter >= bc->frame_duration-2) { // TODO: Calculate time to write data!
+			bc->frame_counter = 0;
+			bc->frame_set_counter = 2;
+			if(bc->frame_length > 0) {
+				if(bc->options & OPTION_DATA_CHANGED) {
+					if(bc->options & OPTION_DATA_ONE_MORE) {
+						bc->options = bc->options & (~OPTION_DATA_ONE_MORE);
 					} else {
-						BC->options = BC->options & (~OPTION_DATA_CHANGED);
+						bc->options = bc->options & (~OPTION_DATA_CHANGED);
 					}
 					__disable_irq();
-					switch(BC->options & OPTION_TYPE_MASK) {
+					switch(bc->options & OPTION_TYPE_MASK) {
 						case OPTION_TYPE_WS2801:  option_ws2801();  break;
 						case OPTION_TYPE_WS2811:
 						case OPTION_TYPE_WS2812:  option_ws281x();  break;
@@ -804,16 +767,16 @@ void tick(const uint8_t tick_type) {
 	}
 
 	if(tick_type & TICK_TASK_TYPE_MESSAGE) {
-		if(BC->options & OPTION_FRAME_RENDERED) {
+		if(bc->options & OPTION_FRAME_RENDERED) {
 			FrameRendered fr;
 			BA->com_make_default_header(&fr, BS->uid, sizeof(FrameRendered), FID_FRAME_RENDERED);
-			fr.length = BC->frame_length;
+			fr.length = bc->frame_length;
 
 			BA->send_blocking_with_timeout(&fr,
 										   sizeof(FrameRendered),
 										   *BA->com_current);
 
-			BC->options = BC->options & (~OPTION_FRAME_RENDERED);
+			bc->options = bc->options & (~OPTION_FRAME_RENDERED);
 		}
 	}
 }

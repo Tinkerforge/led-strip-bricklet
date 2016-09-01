@@ -67,7 +67,7 @@ typedef struct {
 	uint16_t frame_max_length;
 	uint16_t clock_delay;
 	uint8_t channel_mapping;
-	uint8_t rgb_length;
+	//uint8_t unused;
 	uint8_t bcs;
 	uint8_t options;
 } BrickContext;
