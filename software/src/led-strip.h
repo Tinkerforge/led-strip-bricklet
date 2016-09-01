@@ -65,9 +65,9 @@
 #define FID_SET_CHANNEL_MAPPING 13
 #define FID_GET_CHANNEL_MAPPING 14
 
-#define BYTES_1   7
-#define BYTES_3  23
-#define BYTES_4  31
+#define BYTES_1   8
+#define BYTES_3  24
+#define BYTES_4  32
 
 typedef struct {
 	uint8_t r[RGB_LENGTH];
@@ -81,7 +81,6 @@ typedef struct {
 	uint8_t b[RGBW_LENGTH];
 	uint8_t w[RGBW_LENGTH];
 } __attribute__((__packed__)) RGBW;
-
 
 typedef struct {
 	MessageHeader header;

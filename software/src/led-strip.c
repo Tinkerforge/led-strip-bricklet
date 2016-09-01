@@ -88,8 +88,8 @@ ns_to_cycle(2000)
 // Tim: http://cpldcpu.wordpress.com/2014/01/14/light_ws2812-library-v2-0-part-i-understanding-the-ws2812/
 // It does not correspond to the datasheet!
 
-void bb_write_ws281x(const uint32_t value, const int8_t byteCount) {
-	for(int8_t i = byteCount; i >= 0; i--) {
+void bb_write_ws281x(const uint32_t value, const int8_t bit_count) {
+	for(int8_t i = bit_count - 1; i >= 0; i--) {
 		if((value >> i) & 1) {
 			PIN_SPI_SDI.pio->PIO_CODR = PIN_SPI_SDI.mask;
 			SLEEP_THREE_CYCLES(23);
@@ -103,8 +103,8 @@ void bb_write_ws281x(const uint32_t value, const int8_t byteCount) {
 	}
 }
 
-void bb_write_withClock(const uint32_t value, const int8_t byteCount) {
-	for(int8_t i = byteCount; i >= 0; i--) {
+void bb_write_with_clock(const uint32_t value, const int8_t bit_count) {
+	for(int8_t i = bit_count - 1; i >= 0; i--) {
 		if((value >> i) & 1) {
 			PIN_SPI_SDI.pio->PIO_CODR = PIN_SPI_SDI.mask;
 		} else {
@@ -640,7 +640,7 @@ void option_ws2801(void) {
 		uint8_t b = 0;
 
 		get_rgb_from_global_index(i, &r, &g, &b);
-		bb_write_withClock((b << 16) | (g << 8) | r, BYTES_3);
+		bb_write_with_clock((b << 16) | (g << 8) | r, BYTES_3);
 	}
 }
 
@@ -675,18 +675,15 @@ void option_lpd8806(void) {
 		uint8_t r_tmp = r/2+128;
 		uint8_t g_tmp = g/2+128;
 		uint8_t b_tmp = b/2+128;
-		bb_write_withClock((b_tmp << 16) | (g_tmp << 8) | r_tmp, BYTES_3);
+		bb_write_with_clock((b_tmp << 16) | (g_tmp << 8) | r_tmp, BYTES_3);
 	}
 
 	// When MSB is low the shift registers resets and are ready for new data
-	bb_write_withClock((0 << 16) | (0 << 8) | 0, BYTES_3);
+	bb_write_with_clock((0 << 16) | (0 << 8) | 0, BYTES_3);
 }
 
 void option_apa102(void) {
-	bb_write_withClock((0 << 8) | 0, BYTES_1);
-	bb_write_withClock((0 << 8) | 0, BYTES_1);
-	bb_write_withClock((0 << 8) | 0, BYTES_1);
-	bb_write_withClock((0 << 8) | 0, BYTES_1);
+	bb_write_with_clock(0, BYTES_4);
 
 	for(uint16_t i = 0; i < BC->frame_length; i++) {
 		uint8_t r = 0;
@@ -697,7 +694,7 @@ void option_apa102(void) {
 
 		// 3-Bit "1" and brightness setting 5-Bit: constant current output value
 		brightness |= 0b11100000;
-		bb_write_withClock((brightness << 24) | (r << 16) | (g << 8) | b, BYTES_4);
+		bb_write_with_clock((brightness << 24) | (r << 16) | (g << 8) | b, BYTES_4);
 	}
 	// The datasheet says that there have to be a 4-byte endframe, but it should
 	// be left out because the endframe is not different to another LED with RGB
