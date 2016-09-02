@@ -617,7 +617,10 @@ void option_lpd8806(void) {
 	}
 
 	// When MSB is low the shift registers resets and are ready for new data
-	bb_write_with_clock(0, BYTES_3);
+	// https://github.com/adafruit/LPD8806/blob/master/LPD8806.cpp
+	for(uint16_t i = (BC->frame_length + 31) / 32; i > 0; --i) {
+		bb_write_with_clock(0, BYTES_1);
+	}
 }
 
 void option_apa102(void) {
