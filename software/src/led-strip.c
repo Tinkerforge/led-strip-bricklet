@@ -122,8 +122,8 @@ BrickContext *get_bc_from_global_index(uint16_t *index, uint8_t block_length) {
 
 	for (; bc_num < 4; bc_num++) {
 		if (BC->bcs & (1 << bc_num)) {
-			if (*index >= RGBW_LENGTH) {
-				*index -= RGBW_LENGTH;
+			if (*index >= block_length) {
+				*index -= block_length;
 			} else {
 				break;
 			}
@@ -134,32 +134,82 @@ BrickContext *get_bc_from_global_index(uint16_t *index, uint8_t block_length) {
 		return NULL;
 	}
 
-	int8_t rgb_bc_diff = -(BS->port - 'a');
+	int8_t bc_diff = -(BS->port - 'a');
 
-	return BCO_DIRECT(bc_num + rgb_bc_diff);
+	return BCO_DIRECT(bc_num + bc_diff);
 }
 
-void set_rgb_by_global_index(uint16_t index, uint8_t r, uint8_t g, uint8_t b) {
-	BrickContext *bc = get_bc_from_global_index(&index, RGB_LENGTH);
+void set_c3_by_global_index(uint16_t index, uint8_t *c3) {
+	BrickContext *bc = get_bc_from_global_index(&index, BUFFER_LENGTH / 3);
 
-	bc->rgb.r[index] = r;
-	bc->rgb.g[index] = g;
-	bc->rgb.b[index] = b;
+	bc->c3[index][0] = c3[0];
+	bc->c3[index][1] = c3[1];
+	bc->c3[index][2] = c3[2];
 
 	BC->options |= OPTION_DATA_CHANGED;
 	BC->options |= OPTION_DATA_ONE_MORE;
 }
 
-void get_rgb_from_global_index(uint16_t index, uint8_t *r, uint8_t *g, uint8_t *b) {
-	BrickContext *bc = get_bc_from_global_index(&index, RGB_LENGTH);
+void get_c3_from_global_index(uint16_t index, uint8_t *c3) {
+	BrickContext *bc = get_bc_from_global_index(&index, BUFFER_LENGTH / 3);
 
-	*r = bc->rgb.r[index];
-	*g = bc->rgb.g[index];
-	*b = bc->rgb.b[index];
+	c3[0] = bc->c3[index][0];
+	c3[1] = bc->c3[index][1];
+	c3[2] = bc->c3[index][2];
+}
+
+static const uint8_t rgb_mapping[][3] = {
+	/* RGB */ {0, 1, 2},
+	/* RBG */ {0, 2, 1},
+	/* BRG */ {2, 0, 1},
+	/* BGR */ {2, 1, 0},
+	/* GRB */ {1, 0, 2},
+	/* GBR */ {1, 2, 0},
+};
+
+uint8_t get_rgb_mapping_index(void) {
+	switch (BC->channel_mapping) {
+	default:
+	case CHANNEL_MAPPING_RGB:
+	case CHANNEL_MAPPING_RGBW:
+	case CHANNEL_MAPPING_RGWB:
+	case CHANNEL_MAPPING_RWGB:
+	case CHANNEL_MAPPING_WRGB: return 0;
+
+	case CHANNEL_MAPPING_RBG:
+	case CHANNEL_MAPPING_RBGW:
+	case CHANNEL_MAPPING_RBWG:
+	case CHANNEL_MAPPING_RWBG:
+	case CHANNEL_MAPPING_WRBG: return 1;
+
+	case CHANNEL_MAPPING_BRG:
+	case CHANNEL_MAPPING_BRGW:
+	case CHANNEL_MAPPING_BRWG:
+	case CHANNEL_MAPPING_BWRG:
+	case CHANNEL_MAPPING_WBRG: return 2;
+
+	case CHANNEL_MAPPING_BGR:
+	case CHANNEL_MAPPING_BGRW:
+	case CHANNEL_MAPPING_BGWR:
+	case CHANNEL_MAPPING_BWGR:
+	case CHANNEL_MAPPING_WBGR: return 3;
+
+	case CHANNEL_MAPPING_GRB:
+	case CHANNEL_MAPPING_GRBW:
+	case CHANNEL_MAPPING_GRWB:
+	case CHANNEL_MAPPING_GWRB:
+	case CHANNEL_MAPPING_WGRB: return 4;
+
+	case CHANNEL_MAPPING_GBR:
+	case CHANNEL_MAPPING_GBRW:
+	case CHANNEL_MAPPING_GBWR:
+	case CHANNEL_MAPPING_GWBR:
+	case CHANNEL_MAPPING_WGBR: return 5;
+	}
 }
 
 void set_rgb_values(const ComType com, const SetRGBValues *data) {
-	if((data->index + data->length > BC->frame_max_length) || (data->length > RGB_VALUE_SIZE)) {
+	if((data->index + data->length > BC->max_buffer_length / 3) || (data->length > C3_VALUE_SIZE)) {
 		BA->com_return_error(data, sizeof(MessageHeader), MESSAGE_ERROR_CODE_INVALID_PARAMETER, com);
 		return;
 	}
@@ -167,58 +217,19 @@ void set_rgb_values(const ComType com, const SetRGBValues *data) {
 	BC->frame_length = MAX(BC->frame_length, data->index + data->length);
 	BC->options &= ~OPTION_4_CHANNELS;
 
-	uint8_t rm = 0;
-	uint8_t gm = 1;
-	uint8_t bm = 2;
-
-	switch (BC->channel_mapping) {
-	case CHANNEL_MAPPING_RGB:
-	case CHANNEL_MAPPING_RGBW:
-	case CHANNEL_MAPPING_RGWB:
-	case CHANNEL_MAPPING_RWGB:
-	case CHANNEL_MAPPING_WRGB: rm = 0; gm = 1; bm = 2; break;
-
-	case CHANNEL_MAPPING_RBG:
-	case CHANNEL_MAPPING_RBGW:
-	case CHANNEL_MAPPING_RBWG:
-	case CHANNEL_MAPPING_RWBG:
-	case CHANNEL_MAPPING_WRBG: rm = 0; gm = 2; bm = 1; break;
-
-	case CHANNEL_MAPPING_BRG:
-	case CHANNEL_MAPPING_BRGW:
-	case CHANNEL_MAPPING_BRWG:
-	case CHANNEL_MAPPING_BWRG:
-	case CHANNEL_MAPPING_WBRG: rm = 2; gm = 0; bm = 1; break;
-
-	case CHANNEL_MAPPING_BGR:
-	case CHANNEL_MAPPING_BGRW:
-	case CHANNEL_MAPPING_BGWR:
-	case CHANNEL_MAPPING_BWGR:
-	case CHANNEL_MAPPING_WBGR: rm = 2; gm = 1; bm = 0; break;
-
-	case CHANNEL_MAPPING_GRB:
-	case CHANNEL_MAPPING_GRBW:
-	case CHANNEL_MAPPING_GRWB:
-	case CHANNEL_MAPPING_GWRB:
-	case CHANNEL_MAPPING_WGRB: rm = 1; gm = 0; bm = 2; break;
-
-	case CHANNEL_MAPPING_GBR:
-	case CHANNEL_MAPPING_GBRW:
-	case CHANNEL_MAPPING_GBWR:
-	case CHANNEL_MAPPING_GWBR:
-	case CHANNEL_MAPPING_WGBR: rm = 1; gm = 2; bm = 0; break;
-	}
+	const uint8_t *m = rgb_mapping[get_rgb_mapping_index()];
 
 	for(uint8_t i = 0; i < data->length; i++) {
-		const uint8_t in[3] = {data->r[i], data->g[i], data->b[i]};
-		set_rgb_by_global_index(data->index + i, in[rm], in[gm], in[bm]);
+		uint8_t in[3] = {data->r[i], data->g[i], data->b[i]};
+		uint8_t c3[3] = {in[m[0]], in[m[1]], in[m[2]]};
+		set_c3_by_global_index(data->index + i, c3);
 	}
 
 	BA->com_return_setter(com, data);
 }
 
 void get_rgb_values(const ComType com, const GetRGBValues *data) {
-	if((data->index + data->length > BC->frame_max_length) || (data->length > RGB_VALUE_SIZE)) {
+	if((data->index + data->length > BC->max_buffer_length / 3) || (data->length > C3_VALUE_SIZE)) {
 		BA->com_return_error(data, sizeof(MessageHeader), MESSAGE_ERROR_CODE_INVALID_PARAMETER, com);
 		return;
 	}
@@ -227,8 +238,15 @@ void get_rgb_values(const ComType com, const GetRGBValues *data) {
 	grgbvr.header         = data->header;
 	grgbvr.header.length  = sizeof(GetRGBValuesReturn);
 
-	for(uint16_t i = data->index; i < data->index + data->length; i++) {
-		get_rgb_from_global_index(i, &grgbvr.r[i-data->index], &grgbvr.g[i-data->index], &grgbvr.b[i-data->index]);
+	const uint8_t *m = rgb_mapping[get_rgb_mapping_index()];
+	uint8_t c3[3];
+
+	for(uint16_t i = 0; i < data->length; i++) {
+		get_c3_from_global_index(data->index + 1, c3);
+
+		grgbvr.r[i] = c3[m[0]];
+		grgbvr.g[i] = c3[m[1]];
+		grgbvr.b[i] = c3[m[2]];
 	}
 
 	BA->send_blocking_with_timeout(&grgbvr, sizeof(GetRGBValuesReturn), com);
@@ -327,8 +345,72 @@ void get_channel_mapping(const ComType com, const GetChannelMapping *data) {
 	BA->send_blocking_with_timeout(&gcmr, sizeof(GetChannelMappingReturn), com);
 }
 
+static const uint8_t rgbw_mapping[][4] = {
+	/* RGBW */ {0, 1, 2, 3},
+	/* RBGW */ {0, 2, 1, 3},
+	/* BRGW */ {2, 0, 1, 3},
+	/* BGRW */ {2, 1, 0, 3},
+	/* GRBW */ {1, 0, 2, 3},
+	/* GBRW */ {1, 2, 0, 3},
+
+	/* RGWB */ {0, 1, 3, 2},
+	/* RBWG */ {0, 2, 3, 1},
+	/* RWGB */ {0, 3, 1, 2},
+	/* RWBG */ {0, 3, 2, 1},
+	/* GRWB */ {1, 0, 3, 2},
+	/* GBWR */ {1, 2, 3, 0},
+	/* GWBR */ {1, 3, 2, 0},
+	/* GWRB */ {1, 3, 0, 2},
+	/* BRWG */ {2, 0, 3, 1},
+	/* BGWR */ {2, 1, 3, 0},
+	/* BWRG */ {2, 3, 0, 1},
+	/* BWGR */ {2, 3, 1, 0},
+	/* WRBG */ {3, 0, 2, 1},
+	/* WRGB */ {3, 0, 1, 2},
+	/* WGBR */ {3, 1, 2, 0},
+	/* WGRB */ {3, 1, 0, 2},
+	/* WBGR */ {3, 2, 1, 0},
+	/* WBRG */ {3, 2, 0, 1},
+};
+
+uint8_t get_rgbw_mapping_index(void) {
+	switch (BC->channel_mapping) {
+	default:
+	case CHANNEL_MAPPING_RGB:
+	case CHANNEL_MAPPING_RGBW: return 0;
+	case CHANNEL_MAPPING_RBG:
+	case CHANNEL_MAPPING_RBGW: return 1;
+	case CHANNEL_MAPPING_BRG:
+	case CHANNEL_MAPPING_BRGW: return 2;
+	case CHANNEL_MAPPING_BGR:
+	case CHANNEL_MAPPING_BGRW: return 3;
+	case CHANNEL_MAPPING_GRB:
+	case CHANNEL_MAPPING_GRBW: return 4;
+	case CHANNEL_MAPPING_GBR:
+	case CHANNEL_MAPPING_GBRW: return 5;
+	case CHANNEL_MAPPING_RGWB: return 6;
+	case CHANNEL_MAPPING_RBWG: return 7;
+	case CHANNEL_MAPPING_RWGB: return 8;
+	case CHANNEL_MAPPING_RWBG: return 9;
+	case CHANNEL_MAPPING_GRWB: return 10;
+	case CHANNEL_MAPPING_GBWR: return 11;
+	case CHANNEL_MAPPING_GWBR: return 12;
+	case CHANNEL_MAPPING_GWRB: return 13;
+	case CHANNEL_MAPPING_BRWG: return 14;
+	case CHANNEL_MAPPING_BGWR: return 15;
+	case CHANNEL_MAPPING_BWRG: return 16;
+	case CHANNEL_MAPPING_BWGR: return 18;
+	case CHANNEL_MAPPING_WRBG: return 19;
+	case CHANNEL_MAPPING_WRGB: return 20;
+	case CHANNEL_MAPPING_WGBR: return 21;
+	case CHANNEL_MAPPING_WGRB: return 22;
+	case CHANNEL_MAPPING_WBGR: return 23;
+	case CHANNEL_MAPPING_WBRG: return 24;
+	}
+}
+
 void set_rgbw_values(const ComType com, const SetRGBWValues *data) {
-	if((data->index + data->length > BC->frame_max_length) || (data->length > RGBW_VALUE_SIZE)) {
+	if((data->index + data->length > BC->max_buffer_length / 4) || (data->length > C4_VALUE_SIZE)) {
 		BA->com_return_error(data, sizeof(MessageHeader), MESSAGE_ERROR_CODE_INVALID_PARAMETER, com);
 		return;
 	}
@@ -336,54 +418,19 @@ void set_rgbw_values(const ComType com, const SetRGBWValues *data) {
 	BC->frame_length = MAX(BC->frame_length, data->index + data->length);
 	BC->options |= OPTION_4_CHANNELS;
 
-	uint8_t rm = 0;
-	uint8_t gm = 1;
-	uint8_t bm = 2;
-	uint8_t wm = 3;
-
-	switch (BC->channel_mapping) {
-	case CHANNEL_MAPPING_RGB:
-	case CHANNEL_MAPPING_RGBW: rm = 0; gm = 1; bm = 2; wm = 3; break;
-	case CHANNEL_MAPPING_RBG:
-	case CHANNEL_MAPPING_RBGW: rm = 0; gm = 2; bm = 1; wm = 3; break;
-	case CHANNEL_MAPPING_BRG:
-	case CHANNEL_MAPPING_BRGW: rm = 2; gm = 0; bm = 1; wm = 3; break;
-	case CHANNEL_MAPPING_BGR:
-	case CHANNEL_MAPPING_BGRW: rm = 2; gm = 1; bm = 0; wm = 3; break;
-	case CHANNEL_MAPPING_GRB:
-	case CHANNEL_MAPPING_GRBW: rm = 1; gm = 0; bm = 2; wm = 3; break;
-	case CHANNEL_MAPPING_GBR:
-	case CHANNEL_MAPPING_GBRW: rm = 1; gm = 2; bm = 0; wm = 3; break;
-	case CHANNEL_MAPPING_RGWB: rm = 0; gm = 1; bm = 3; wm = 2; break;
-	case CHANNEL_MAPPING_RBWG: rm = 0; gm = 2; bm = 3; wm = 1; break;
-	case CHANNEL_MAPPING_RWGB: rm = 0; gm = 3; bm = 1; wm = 2; break;
-	case CHANNEL_MAPPING_RWBG: rm = 0; gm = 3; bm = 2; wm = 1; break;
-	case CHANNEL_MAPPING_GRWB: rm = 1; gm = 0; bm = 3; wm = 2; break;
-	case CHANNEL_MAPPING_GBWR: rm = 1; gm = 2; bm = 3; wm = 0; break;
-	case CHANNEL_MAPPING_GWBR: rm = 1; gm = 3; bm = 2; wm = 0; break;
-	case CHANNEL_MAPPING_GWRB: rm = 1; gm = 3; bm = 0; wm = 2; break;
-	case CHANNEL_MAPPING_BRWG: rm = 2; gm = 0; bm = 3; wm = 1; break;
-	case CHANNEL_MAPPING_BGWR: rm = 2; gm = 1; bm = 3; wm = 0; break;
-	case CHANNEL_MAPPING_BWRG: rm = 2; gm = 3; bm = 0; wm = 1; break;
-	case CHANNEL_MAPPING_BWGR: rm = 2; gm = 3; bm = 1; wm = 0; break;
-	case CHANNEL_MAPPING_WRBG: rm = 3; gm = 0; bm = 2; wm = 1; break;
-	case CHANNEL_MAPPING_WRGB: rm = 3; gm = 0; bm = 1; wm = 2; break;
-	case CHANNEL_MAPPING_WGBR: rm = 3; gm = 1; bm = 2; wm = 0; break;
-	case CHANNEL_MAPPING_WGRB: rm = 3; gm = 1; bm = 0; wm = 2; break;
-	case CHANNEL_MAPPING_WBGR: rm = 3; gm = 2; bm = 1; wm = 0; break;
-	case CHANNEL_MAPPING_WBRG: rm = 3; gm = 2; bm = 0; wm = 1; break;
-	}
+	const uint8_t *m = rgbw_mapping[get_rgbw_mapping_index()];
 
 	for(uint8_t i = 0; i < data->length; i++) {
 		const uint8_t in[4] = {data->r[i], data->g[i], data->b[i], data->w[i]};
-		set_rgbw_by_global_index(data->index + i, in[rm], in[gm], in[bm], in[wm]);
+		uint8_t c4[4] = {in[m[0]], in[m[1]], in[m[2]], in[m[3]]};
+		set_c4_by_global_index(data->index + i, c4);
 	}
 
 	BA->com_return_setter(com, data);
 }
 
 void get_rgbw_values(const ComType com, const GetRGBWValues *data) {
-	if((data->index + data->length > BC->frame_max_length) || (data->length > RGBW_VALUE_SIZE)) {
+	if((data->index + data->length > BC->max_buffer_length / 4) || (data->length > C4_VALUE_SIZE)) {
 		BA->com_return_error(data, sizeof(MessageHeader), MESSAGE_ERROR_CODE_INVALID_PARAMETER, com);
 		return;
 	}
@@ -392,29 +439,37 @@ void get_rgbw_values(const ComType com, const GetRGBWValues *data) {
 	grgbwvr.header         = data->header;
 	grgbwvr.header.length  = sizeof(GetRGBWValuesReturn);
 
-	for(uint16_t i = data->index; i < data->index + data->length; i++) {
-		get_rgbw_from_global_index(i, &grgbwvr.r[i-data->index], &grgbwvr.g[i-data->index], &grgbwvr.b[i-data->index], &grgbwvr.w[i-data->index]);
+	const uint8_t *m = rgbw_mapping[get_rgbw_mapping_index()];
+	uint8_t c4[4];
+
+	for(uint16_t i = 0; i < data->length; i++) {
+		get_c4_from_global_index(data->index + 1, c4);
+
+		grgbwvr.r[i] = c4[m[0]];
+		grgbwvr.g[i] = c4[m[1]];
+		grgbwvr.b[i] = c4[m[2]];
+		grgbwvr.w[i] = c4[m[3]];
 	}
 
 	BA->send_blocking_with_timeout(&grgbwvr, sizeof(GetRGBWValuesReturn), com);
 }
 
-void get_rgbw_from_global_index(uint16_t index, uint8_t *r, uint8_t *g, uint8_t *b, uint8_t *w) {
-	BrickContext *bc = get_bc_from_global_index(&index, RGBW_LENGTH);
+void get_c4_from_global_index(uint16_t index, uint8_t *c4) {
+	BrickContext *bc = get_bc_from_global_index(&index, BUFFER_LENGTH / 4);
 
-	*r = bc->rgbw.r[index];
-	*g = bc->rgbw.g[index];
-	*b = bc->rgbw.b[index];
-	*w = bc->rgbw.w[index];
+	c4[0] = bc->c4[index][0];
+	c4[1] = bc->c4[index][1];
+	c4[2] = bc->c4[index][2];
+	c4[3] = bc->c4[index][3];
 }
 
-void set_rgbw_by_global_index(uint16_t index, uint8_t r, uint8_t g, uint8_t b, uint8_t w) {
-	BrickContext *bc = get_bc_from_global_index(&index, RGBW_LENGTH);
+void set_c4_by_global_index(uint16_t index, uint8_t *c4) {
+	BrickContext *bc = get_bc_from_global_index(&index, BUFFER_LENGTH / 4);
 
-	bc->rgbw.r[index] = r;
-	bc->rgbw.g[index] = g;
-	bc->rgbw.b[index] = b;
-	bc->rgbw.w[index] = w;
+	bc->c4[index][0] = c4[0];
+	bc->c4[index][1] = c4[1];
+	bc->c4[index][2] = c4[2];
+	bc->c4[index][3] = c4[3];
 
 	BC->options |= OPTION_DATA_CHANGED;
 	BC->options |= OPTION_DATA_ONE_MORE;
@@ -476,6 +531,7 @@ void invocation(const ComType com, const uint8_t *data) {
 			get_rgbw_values(com, (GetRGBWValues*)data);
 			return;
 		}
+
 		case FID_SET_CHANNEL_MAPPING: {
 			set_channel_mapping(com, (SetChannelMapping*)data);
 			return;
@@ -518,73 +574,61 @@ void constructor(void) {
 	BC->clock_delay = 300;
 
 	BC->options = 0; // Frame rendered = false, Chip Type = WS2801
-	BC->frame_max_length = RGB_LENGTH;
+	BC->max_buffer_length = BUFFER_LENGTH;
 	BC->bcs = 0;
 }
 
 void option_ws2801(void) {
-	for(uint16_t i = 0; i < BC->frame_length; i++) {
-		uint8_t r = 0;
-		uint8_t g = 0;
-		uint8_t b = 0;
+	uint8_t c3[3];
 
-		get_rgb_from_global_index(i, &r, &g, &b);
-		bb_write_with_clock((b << 16) | (g << 8) | r, BYTES_3);
+	for(uint16_t i = 0; i < BC->frame_length; i++) {
+		get_c3_from_global_index(i, c3);
+		bb_write_with_clock((c3[2] << 16) | (c3[1] << 8) | c3[0], BYTES_3);
 	}
 }
 
 void option_ws281x(void) {
-	uint8_t r = 0;
-	uint8_t g = 0;
-	uint8_t b = 0;
-	uint8_t w = 0;
+	uint8_t c4[4];
 
 	if (BC->options & OPTION_4_CHANNELS) {
 		for(uint16_t i = 0; i < BC->frame_length; i++) {
-			get_rgbw_from_global_index(i, &r, &g, &b, &w);
-			bb_write_ws281x((b << 24) | (g << 16) | (r << 8) | w, BYTES_4);
+			get_c4_from_global_index(i, c4);
+			bb_write_ws281x((c4[2] << 24) | (c4[1] << 16) | (c4[0] << 8) | c4[3], BYTES_4);
 		};
 	} else {
 		for(uint16_t i = 0; i < BC->frame_length; i++) {
-			get_rgb_from_global_index(i, &r, &g, &b);
-			bb_write_ws281x((b << 16) | (g << 8) | r, BYTES_3);
+			get_c3_from_global_index(i, c4);
+			bb_write_ws281x((c4[2] << 16) | (c4[1] << 8) | c4[0], BYTES_3);
 		}
 	}
 }
 
 void option_lpd8806(void) {
-	for(uint16_t i = 0; i < BC->frame_length; i++) {
-		uint8_t r = 0;
-		uint8_t g = 0;
-		uint8_t b = 0;
+	uint8_t c3[3];
 
-		get_rgb_from_global_index(i, &r, &g, &b);
+	for(uint16_t i = 0; i < BC->frame_length; i++) {
+		get_c3_from_global_index(i, c3);
 
 		// +128 because the MSB has to be high while data shifting
-		uint8_t r_tmp = r/2+128;
-		uint8_t g_tmp = g/2+128;
-		uint8_t b_tmp = b/2+128;
-		bb_write_with_clock((b_tmp << 16) | (g_tmp << 8) | r_tmp, BYTES_3);
+		bb_write_with_clock(((c3[2] / 2 + 128) << 16) | ((c3[1] / 2 + 128) << 8) | (c3[0] / 2 + 128), BYTES_3);
 	}
 
 	// When MSB is low the shift registers resets and are ready for new data
-	bb_write_with_clock((0 << 16) | (0 << 8) | 0, BYTES_3);
+	bb_write_with_clock(0, BYTES_3);
 }
 
 void option_apa102(void) {
 	bb_write_with_clock(0, BYTES_4);
 
+	uint8_t c4[4];
+
 	for(uint16_t i = 0; i < BC->frame_length; i++) {
-		uint8_t r = 0;
-		uint8_t g = 0;
-		uint8_t b = 0;
-		uint8_t brightness = 0;
-		get_rgbw_from_global_index(i, &r, &g, &b, &brightness);
+		get_c4_from_global_index(i, c4);
 
 		// 3-Bit "1" and brightness setting 5-Bit: constant current output value
-		brightness |= 0b11100000;
-		bb_write_with_clock((brightness << 24) | (r << 16) | (g << 8) | b, BYTES_4);
+		bb_write_with_clock((((c4[3] / 8) | 0b11100000) << 24) | (c4[0] << 16) | (c4[1] << 8) | c4[2], BYTES_4);
 	}
+
 	// The datasheet says that there have to be a 4-byte endframe, but it should
 	// be left out because the endframe is not different to another LED with RGB
 	// with these values: R=B=G=255
@@ -599,22 +643,23 @@ void tick(const uint8_t tick_type) {
 
 	if(tick_type & TICK_TASK_TYPE_CALCULATION) {
 		if(bc->bcs == 0) {
-			int8_t rgb_bc_diff = -(BS->port - 'a');
-			uint8_t rgb_length;
+			int8_t bc_diff = -(BS->port - 'a');
+			uint8_t length;
 
-			if(BSO_DIRECT(rgb_bc_diff+1)->address == I2C_EEPROM_ADDRESS_HIGH) {
-				rgb_length = 4;
+			if(BSO_DIRECT(bc_diff+1)->address == I2C_EEPROM_ADDRESS_HIGH) {
+				length = 4;
 			} else {
-				rgb_length = 2;
+				length = 2;
 			}
 
-			for(uint8_t i = 0; i < rgb_length; i++) {
-				if(BSO_DIRECT(i + rgb_bc_diff)->device_identifier == 0) {
+			for(uint8_t i = 0; i < length; i++) {
+				if(BSO_DIRECT(i + bc_diff)->device_identifier == 0) {
 					bc->bcs |= 1 << i;
-					bc->frame_max_length += RGB_LENGTH;
+					bc->max_buffer_length += BUFFER_LENGTH;
 				}
 			}
-			bc->bcs |= 1 << ABS(rgb_bc_diff);
+
+			bc->bcs |= 1 << ABS(bc_diff);
 		}
 
 		if(bc->frame_set_counter > 0) {

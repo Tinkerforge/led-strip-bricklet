@@ -57,14 +57,15 @@
 
 typedef struct {
 	union {
-		RGB rgb;
-		RGBW rgbw;
+		uint8_t c3[BUFFER_LENGTH / 3][3];
+		uint8_t c4[BUFFER_LENGTH / 4][4];
 	};
+
 	uint16_t frame_duration;
 	uint16_t frame_counter;
 	uint16_t frame_set_counter;
 	uint16_t frame_length;
-	uint16_t frame_max_length;
+	uint16_t max_buffer_length; // bytes
 	uint16_t clock_delay;
 	uint8_t channel_mapping;
 	//uint8_t unused;

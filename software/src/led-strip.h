@@ -27,10 +27,9 @@
 
 #define I2C_EEPROM_ADDRESS_HIGH 84
 
-#define RGB_LENGTH 80
-#define RGBW_LENGTH 60
-#define RGB_VALUE_SIZE 16
-#define RGBW_VALUE_SIZE 12
+#define BUFFER_LENGTH 240
+#define C3_VALUE_SIZE 16
+#define C4_VALUE_SIZE 12
 
 #define TYPE_WS2801  0
 #define TYPE_WS2811  1
@@ -101,25 +100,12 @@
 #define BYTES_4  32
 
 typedef struct {
-	uint8_t r[RGB_LENGTH];
-	uint8_t g[RGB_LENGTH];
-	uint8_t b[RGB_LENGTH];
-} __attribute__((__packed__)) RGB;
-
-typedef struct {
-	uint8_t r[RGBW_LENGTH];
-	uint8_t g[RGBW_LENGTH];
-	uint8_t b[RGBW_LENGTH];
-	uint8_t w[RGBW_LENGTH];
-} __attribute__((__packed__)) RGBW;
-
-typedef struct {
 	MessageHeader header;
 	uint16_t index;
 	uint8_t length;
-	uint8_t r[RGB_VALUE_SIZE];
-	uint8_t g[RGB_VALUE_SIZE];
-	uint8_t b[RGB_VALUE_SIZE];
+	uint8_t r[C3_VALUE_SIZE];
+	uint8_t g[C3_VALUE_SIZE];
+	uint8_t b[C3_VALUE_SIZE];
 } __attribute__((__packed__)) SetRGBValues;
 
 typedef struct {
@@ -130,9 +116,9 @@ typedef struct {
 
 typedef struct {
 	MessageHeader header;
-	uint8_t r[RGB_VALUE_SIZE];
-	uint8_t g[RGB_VALUE_SIZE];
-	uint8_t b[RGB_VALUE_SIZE];
+	uint8_t r[C3_VALUE_SIZE];
+	uint8_t g[C3_VALUE_SIZE];
+	uint8_t b[C3_VALUE_SIZE];
 } __attribute__((__packed__)) GetRGBValuesReturn;
 
 typedef struct {
@@ -195,10 +181,10 @@ typedef struct {
 	MessageHeader header;
 	uint16_t index;
 	uint8_t length;
-	uint8_t r[RGBW_VALUE_SIZE];
-	uint8_t g[RGBW_VALUE_SIZE];
-	uint8_t b[RGBW_VALUE_SIZE];
-	uint8_t w[RGBW_VALUE_SIZE];
+	uint8_t r[C4_VALUE_SIZE];
+	uint8_t g[C4_VALUE_SIZE];
+	uint8_t b[C4_VALUE_SIZE];
+	uint8_t w[C4_VALUE_SIZE];
 } __attribute__((__packed__)) SetRGBWValues;
 
 typedef struct {
@@ -209,10 +195,10 @@ typedef struct {
 
 typedef struct {
 	MessageHeader header;
-	uint8_t r[RGBW_VALUE_SIZE];
-	uint8_t g[RGBW_VALUE_SIZE];
-	uint8_t b[RGBW_VALUE_SIZE];
-	uint8_t w[RGBW_VALUE_SIZE];
+	uint8_t r[C4_VALUE_SIZE];
+	uint8_t g[C4_VALUE_SIZE];
+	uint8_t b[C4_VALUE_SIZE];
+	uint8_t w[C4_VALUE_SIZE];
 } __attribute__((__packed__)) GetRGBWValuesReturn;
 
 typedef struct {
@@ -251,11 +237,11 @@ void option_ws281x(void);
 void option_lpd8806(void);
 void option_apa102(void);
 
-void set_rgb_by_global_index(uint16_t index, uint8_t r, uint8_t g, uint8_t b);
-void get_rgb_from_global_index(uint16_t index, uint8_t *r, uint8_t *g, uint8_t *b);
+void set_c3_by_global_index(uint16_t index, uint8_t *c3);
+void get_c3_from_global_index(uint16_t index, uint8_t *c3);
 
-void set_rgbw_by_global_index(uint16_t index, uint8_t r, uint8_t g, uint8_t b, uint8_t w);
-void get_rgbw_from_global_index(uint16_t index, uint8_t *r, uint8_t *g, uint8_t *b, uint8_t *w);
+void set_c4_by_global_index(uint16_t index, uint8_t *c4);
+void get_c4_from_global_index(uint16_t index, uint8_t *c4);
 
 void invocation(const ComType com, const uint8_t *data);
 void constructor(void);
