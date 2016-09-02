@@ -629,9 +629,14 @@ void option_apa102(void) {
 		bb_write_with_clock((((c4[3] / 8) | 0b11100000) << 24) | (c4[0] << 16) | (c4[1] << 8) | c4[2], BYTES_4);
 	}
 
-	// The datasheet says that there have to be a 4-byte endframe, but it should
-	// be left out because the endframe is not different to another LED with RGB
-	// with these values: R=B=G=255
+	// The datasheet says that there have to be a 4-byte endframe with all bits
+	// set. But that create a fully white LED after the end of the configured
+	// number of LEDs. The endframe is necessary without it the last configured
+	// LED doesn't work correctly. Instead of sending the documented endframe,
+	// only set the first three bit to 1. This works as well and dosn't create
+	// a while LED at the end. Surprisingly it doesn't produce a black one either.
+	// It just works as expected.
+	bb_write_with_clock(0b11100000, BYTES_4);
 }
 
 void tick(const uint8_t tick_type) {
