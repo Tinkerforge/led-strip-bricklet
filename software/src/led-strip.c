@@ -242,7 +242,7 @@ void get_rgb_values(const ComType com, const GetRGBValues *data) {
 	uint8_t c3[3];
 
 	for(uint16_t i = 0; i < data->length; i++) {
-		get_c3_from_global_index(data->index + 1, c3);
+		get_c3_from_global_index(data->index + i, c3);
 
 		grgbvr.r[i] = c3[m[0]];
 		grgbvr.g[i] = c3[m[1]];
@@ -445,7 +445,7 @@ void get_rgbw_values(const ComType com, const GetRGBWValues *data) {
 	uint8_t c4[4];
 
 	for(uint16_t i = 0; i < data->length; i++) {
-		get_c4_from_global_index(data->index + 1, c4);
+		get_c4_from_global_index(data->index + i, c4);
 
 		grgbwvr.r[i] = c4[m[0]];
 		grgbwvr.g[i] = c4[m[1]];
