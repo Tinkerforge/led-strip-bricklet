@@ -328,7 +328,7 @@ void get_chip_type(const ComType com, const GetChipType *data) {
 }
 
 void set_channel_mapping(const ComType com, const SetChannelMapping *data) {
-	if(data->channel_mapping < 0 && data->channel_mapping > 29) {
+	if(data->channel_mapping > CHANNEL_MAPPING_WBRG) {
 		BA->com_return_error(data, sizeof(MessageHeader), MESSAGE_ERROR_CODE_INVALID_PARAMETER, com);
 		return;
 	}
@@ -339,9 +339,11 @@ void set_channel_mapping(const ComType com, const SetChannelMapping *data) {
 
 void get_channel_mapping(const ComType com, const GetChannelMapping *data) {
 	GetChannelMappingReturn gcmr;
-	gcmr.header        = data->header;
-	gcmr.header.length = sizeof(GetChannelMappingReturn);
+
+	gcmr.header          = data->header;
+	gcmr.header.length   = sizeof(GetChannelMappingReturn);
 	gcmr.channel_mapping = BC->channel_mapping;
+
 	BA->send_blocking_with_timeout(&gcmr, sizeof(GetChannelMappingReturn), com);
 }
 
@@ -410,7 +412,7 @@ uint8_t get_rgbw_mapping_index(void) {
 }
 
 void set_rgbw_values(const ComType com, const SetRGBWValues *data) {
-	if((data->index + data->length > BC->max_buffer_length / 4) || (data->length > C4_VALUE_SIZE)) {
+	if(data->index + data->length > BC->max_buffer_length / 4 || data->length > C4_VALUE_SIZE) {
 		BA->com_return_error(data, sizeof(MessageHeader), MESSAGE_ERROR_CODE_INVALID_PARAMETER, com);
 		return;
 	}
@@ -430,7 +432,7 @@ void set_rgbw_values(const ComType com, const SetRGBWValues *data) {
 }
 
 void get_rgbw_values(const ComType com, const GetRGBWValues *data) {
-	if((data->index + data->length > BC->max_buffer_length / 4) || (data->length > C4_VALUE_SIZE)) {
+	if(data->index + data->length > BC->max_buffer_length / 4 || data->length > C4_VALUE_SIZE) {
 		BA->com_return_error(data, sizeof(MessageHeader), MESSAGE_ERROR_CODE_INVALID_PARAMETER, com);
 		return;
 	}
@@ -678,16 +680,19 @@ void tick(const uint8_t tick_type) {
 		}
 
 		bc->frame_counter++;
+
 		if(bc->frame_counter >= bc->frame_duration-2) { // TODO: Calculate time to write data!
 			bc->frame_counter = 0;
 			bc->frame_set_counter = 2;
+
 			if(bc->frame_length > 0) {
 				if(bc->options & OPTION_DATA_CHANGED) {
 					if(bc->options & OPTION_DATA_ONE_MORE) {
-						bc->options = bc->options & (~OPTION_DATA_ONE_MORE);
+						bc->options &= ~OPTION_DATA_ONE_MORE;
 					} else {
-						bc->options = bc->options & (~OPTION_DATA_CHANGED);
+						bc->options &= ~OPTION_DATA_CHANGED;
 					}
+
 					__disable_irq();
 					switch(bc->options & OPTION_TYPE_MASK) {
 						case OPTION_TYPE_WS2801:  option_ws2801();  break;
@@ -712,7 +717,7 @@ void tick(const uint8_t tick_type) {
 										   sizeof(FrameRendered),
 										   *BA->com_current);
 
-			bc->options = bc->options & (~OPTION_FRAME_RENDERED);
+			bc->options &= ~OPTION_FRAME_RENDERED;
 		}
 	}
 }
