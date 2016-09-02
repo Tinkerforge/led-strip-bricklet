@@ -574,6 +574,7 @@ void constructor(void) {
 	BC->frame_set_counter = 0;
 	BC->frame_length = 0;
 	BC->clock_delay = 300;
+	BC->channel_mapping = CHANNEL_MAPPING_BGR;
 
 	BC->options = 0; // Frame rendered = false, Chip Type = WS2801
 	BC->max_buffer_length = BUFFER_LENGTH;
@@ -585,7 +586,7 @@ void option_ws2801(void) {
 
 	for(uint16_t i = 0; i < BC->frame_length; i++) {
 		get_c3_from_global_index(i, c3);
-		bb_write_with_clock((c3[2] << 16) | (c3[1] << 8) | c3[0], BYTES_3);
+		bb_write_with_clock((c3[0] << 16) | (c3[1] << 8) | c3[2], BYTES_3);
 	}
 }
 
@@ -595,12 +596,12 @@ void option_ws281x(void) {
 	if (BC->options & OPTION_4_CHANNELS) {
 		for(uint16_t i = 0; i < BC->frame_length; i++) {
 			get_c4_from_global_index(i, c4);
-			bb_write_ws281x((c4[2] << 24) | (c4[1] << 16) | (c4[0] << 8) | c4[3], BYTES_4);
+			bb_write_ws281x((c4[0] << 24) | (c4[1] << 16) | (c4[2] << 8) | c4[3], BYTES_4);
 		};
 	} else {
 		for(uint16_t i = 0; i < BC->frame_length; i++) {
 			get_c3_from_global_index(i, c4);
-			bb_write_ws281x((c4[2] << 16) | (c4[1] << 8) | c4[0], BYTES_3);
+			bb_write_ws281x((c4[0] << 16) | (c4[1] << 8) | c4[2], BYTES_3);
 		}
 	}
 }
@@ -612,7 +613,7 @@ void option_lpd8806(void) {
 		get_c3_from_global_index(i, c3);
 
 		// +128 because the MSB has to be high while data shifting
-		bb_write_with_clock(((c3[2] / 2 + 128) << 16) | ((c3[1] / 2 + 128) << 8) | (c3[0] / 2 + 128), BYTES_3);
+		bb_write_with_clock(((c3[0] / 2 + 128) << 16) | ((c3[1] / 2 + 128) << 8) | (c3[2] / 2 + 128), BYTES_3);
 	}
 
 	// When MSB is low the shift registers resets and are ready for new data
@@ -628,7 +629,7 @@ void option_apa102(void) {
 		get_c4_from_global_index(i, c4);
 
 		// 3-Bit "1" and brightness setting 5-Bit: constant current output value
-		bb_write_with_clock((((c4[3] / 8) | 0b11100000) << 24) | (c4[0] << 16) | (c4[1] << 8) | c4[2], BYTES_4);
+		bb_write_with_clock(((0b11100000 | (c4[3] / 8)) << 24) | (c4[0] << 16) | (c4[1] << 8) | c4[2], BYTES_4);
 	}
 
 	// The datasheet says that there have to be a 4-byte endframe with all bits
