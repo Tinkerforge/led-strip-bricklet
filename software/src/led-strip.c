@@ -451,6 +451,21 @@ void invocation(const ComType com, const uint8_t *data) {
 			return;
 		}
 
+		case FID_ENABLE_FRAME_RENDERED_CALLBACK: {
+			enable_frame_rendered_callback(com, (EnableFrameRenderedCallback*)data);
+			return;
+		}
+
+		case FID_DISABLE_FRAME_RENDERED_CALLBACK: {
+			disable_frame_rendered_callback(com, (DisableFrameRenderedCallback*)data);
+			return;
+		}
+
+		case FID_IS_FRAME_RENDERED_CALLBACK_ENABLED: {
+			is_frame_rendered_callback_enabled(com, (IsFrameRenderedCallbackEnabled*)data);
+			return;
+		}
+
 		default: {
 			BA->com_return_error(data, sizeof(MessageHeader), MESSAGE_ERROR_CODE_NOT_SUPPORTED, com);
 			break;
@@ -483,7 +498,7 @@ void constructor(void) {
 	BC->clock_delay = 300;
 	BC->channel_mapping = CHANNEL_MAPPING_BGR;
 
-	BC->options = 0; // Frame rendered = false, Chip Type = WS2801
+	BC->options = OPTION_CALLBACK_ENABLED; // Frame rendered = false, Chip Type = WS2801
 	BC->max_buffer_length = BUFFER_LENGTH;
 	BC->bcs = 0;
 }
@@ -628,7 +643,10 @@ void tick(const uint8_t tick_type) {
 
 		if(bc->frame_counter >= bc->frame_duration-2) { // TODO: Calculate time to write data!
 			bc->frame_counter = 0;
-			bc->frame_set_counter = 2;
+
+			if(bc->options & OPTION_CALLBACK_ENABLED) {
+				bc->frame_set_counter = 2;
+			}
 
 			if(bc->frame_length > 0) {
 				if(bc->options & OPTION_DATA_CHANGED) {
@@ -654,13 +672,14 @@ void tick(const uint8_t tick_type) {
 
 	if(tick_type & TICK_TASK_TYPE_MESSAGE) {
 		if(bc->options & OPTION_FRAME_RENDERED) {
+			BrickletAPI *ba = BA;
 			FrameRendered fr;
-			BA->com_make_default_header(&fr, BS->uid, sizeof(FrameRendered), FID_FRAME_RENDERED);
+			ba->com_make_default_header(&fr, BS->uid, sizeof(FrameRendered), FID_FRAME_RENDERED);
 			fr.length = bc->frame_length;
 
-			BA->send_blocking_with_timeout(&fr,
+			ba->send_blocking_with_timeout(&fr,
 										   sizeof(FrameRendered),
-										   *BA->com_current);
+										   *ba->com_current);
 
 			bc->options &= ~OPTION_FRAME_RENDERED;
 		}

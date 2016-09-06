@@ -82,6 +82,7 @@
 #define OPTION_DATA_CHANGED     (1 << 4)
 #define OPTION_DATA_ONE_MORE    (1 << 5)
 #define OPTION_4_CHANNELS       (1 << 6)
+#define OPTION_CALLBACK_ENABLED (1 << 7)
 
 #define FID_SET_RGB_VALUES      1
 #define FID_GET_RGB_VALUES      2
@@ -97,6 +98,9 @@
 #define FID_GET_RGBW_VALUES     12
 #define FID_SET_CHANNEL_MAPPING 13
 #define FID_GET_CHANNEL_MAPPING 14
+#define FID_ENABLE_FRAME_RENDERED_CALLBACK     15
+#define FID_DISABLE_FRAME_RENDERED_CALLBACK    16
+#define FID_IS_FRAME_RENDERED_CALLBACK_ENABLED 17
 
 #define BYTES_1   8
 #define BYTES_3  24
@@ -218,6 +222,23 @@ typedef struct {
 	uint8_t channel_mapping;
 } __attribute__((__packed__)) GetChannelMappingReturn;
 
+typedef struct {
+	MessageHeader header;
+} __attribute__((__packed__)) EnableFrameRenderedCallback;
+
+typedef struct {
+	MessageHeader header;
+} __attribute__((__packed__)) DisableFrameRenderedCallback;
+
+typedef struct {
+	MessageHeader header;
+} __attribute__((__packed__)) IsFrameRenderedCallbackEnabled;
+
+typedef struct {
+	MessageHeader header;
+	bool enabled;
+} __attribute__((__packed__)) IsFrameRenderedCallbackEnabledReturn;
+
 void set_rgb_values(const ComType com, const SetRGBValues *data);
 void get_rgb_values(const ComType com, const GetRGBValues *data);
 void set_frame_duration(const ComType com, const SetFrameDuration *data);
@@ -231,6 +252,9 @@ void set_rgbw_values(const ComType com, const SetRGBWValues *data);
 void get_rgbw_values(const ComType com, const GetRGBWValues *data);
 void set_channel_mapping(const ComType com, const SetChannelMapping *data);
 void get_channel_mapping(const ComType com, const GetChannelMapping *data);
+void enable_frame_rendered_callback(const ComType com, const EnableFrameRenderedCallback *data);
+void disable_frame_rendered_callback(const ComType com, const DisableFrameRenderedCallback *data);
+void is_frame_rendered_callback_enabled(const ComType com, const IsFrameRenderedCallbackEnabled *data);
 
 void bb_write_ws281x(const uint32_t value, const int8_t byteCount);
 void bb_write_withClock(const uint32_t value, const int8_t byteCount);
