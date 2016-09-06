@@ -57,8 +57,8 @@
 
 typedef struct {
 	union {
-		uint8_t c3[BUFFER_LENGTH / 3][3];
-		uint8_t c4[BUFFER_LENGTH / 4][4];
+		uint8_t rgb[BUFFER_LENGTH / 3][3];
+		uint8_t rgbw[BUFFER_LENGTH / 4][4];
 	};
 
 	uint16_t frame_duration;

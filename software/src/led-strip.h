@@ -28,8 +28,8 @@
 #define I2C_EEPROM_ADDRESS_HIGH 84
 
 #define BUFFER_LENGTH 240
-#define C3_VALUE_SIZE 16
-#define C4_VALUE_SIZE 12
+#define RGB_VALUE_SIZE 16
+#define RGBW_VALUE_SIZE 12
 
 #define TYPE_WS2801  0
 #define TYPE_WS2811  1
@@ -37,48 +37,51 @@
 #define TYPE_LPD8806 3
 #define TYPE_APA102  4
 
-#define CHANNEL_MAPPING_RGB   0
-#define CHANNEL_MAPPING_RBG   1
-#define CHANNEL_MAPPING_BRG   2
-#define CHANNEL_MAPPING_BGR   3
-#define CHANNEL_MAPPING_GRB   4
-#define CHANNEL_MAPPING_GBR   5
-#define CHANNEL_MAPPING_RGBW  6
-#define CHANNEL_MAPPING_RGWB  7
-#define CHANNEL_MAPPING_RBGW  8
-#define CHANNEL_MAPPING_RBWG  9
-#define CHANNEL_MAPPING_RWGB 10
-#define CHANNEL_MAPPING_RWBG 11
-#define CHANNEL_MAPPING_GRWB 12
-#define CHANNEL_MAPPING_GRBW 13
-#define CHANNEL_MAPPING_GBWR 14
-#define CHANNEL_MAPPING_GBRW 15
-#define CHANNEL_MAPPING_GWBR 16
-#define CHANNEL_MAPPING_GWRB 17
-#define CHANNEL_MAPPING_BRGW 18
-#define CHANNEL_MAPPING_BRWG 19
-#define CHANNEL_MAPPING_BGRW 20
-#define CHANNEL_MAPPING_BGWR 21
-#define CHANNEL_MAPPING_BWRG 22
-#define CHANNEL_MAPPING_BWGR 23
-#define CHANNEL_MAPPING_WRBG 24
-#define CHANNEL_MAPPING_WRGB 25
-#define CHANNEL_MAPPING_WGBR 26
-#define CHANNEL_MAPPING_WGRB 27
-#define CHANNEL_MAPPING_WBGR 28
-#define CHANNEL_MAPPING_WBRG 29
+#define CHANNEL_MAPPING_C3(c0, c1, c2)     (((c0) << 4) | ((c1) << 2) | (c2))
+#define CHANNEL_MAPPING_C4(c0, c1, c2, c3) (((c0) << 6) | ((c1) << 4) | ((c2) << 2) | (c3))
 
-#define OPTION_TYPE_MASK      (7 << 1)
+#define CHANNEL_MAPPING_RGB  CHANNEL_MAPPING_C3(0, 1, 2)
+#define CHANNEL_MAPPING_RBG  CHANNEL_MAPPING_C3(0, 2, 1)
+#define CHANNEL_MAPPING_BRG  CHANNEL_MAPPING_C3(2, 0, 1)
+#define CHANNEL_MAPPING_BGR  CHANNEL_MAPPING_C3(2, 1, 0)
+#define CHANNEL_MAPPING_GRB  CHANNEL_MAPPING_C3(1, 0, 2)
+#define CHANNEL_MAPPING_GBR  CHANNEL_MAPPING_C3(1, 2, 0)
+#define CHANNEL_MAPPING_RGBW CHANNEL_MAPPING_C4(0, 1, 2, 3)
+#define CHANNEL_MAPPING_RGWB CHANNEL_MAPPING_C4(0, 1, 3, 2)
+#define CHANNEL_MAPPING_RBGW CHANNEL_MAPPING_C4(0, 2, 1, 3)
+#define CHANNEL_MAPPING_RBWG CHANNEL_MAPPING_C4(0, 2, 3, 1)
+#define CHANNEL_MAPPING_RWGB CHANNEL_MAPPING_C4(0, 3, 1, 2)
+#define CHANNEL_MAPPING_RWBG CHANNEL_MAPPING_C4(0, 3, 2, 1)
+#define CHANNEL_MAPPING_GRWB CHANNEL_MAPPING_C4(1, 0, 3, 2)
+#define CHANNEL_MAPPING_GRBW CHANNEL_MAPPING_C4(1, 0, 2, 3)
+#define CHANNEL_MAPPING_GBWR CHANNEL_MAPPING_C4(1, 2, 3, 0)
+#define CHANNEL_MAPPING_GBRW CHANNEL_MAPPING_C4(1, 2, 0, 3)
+#define CHANNEL_MAPPING_GWBR CHANNEL_MAPPING_C4(1, 3, 2, 0)
+#define CHANNEL_MAPPING_GWRB CHANNEL_MAPPING_C4(1, 3, 0, 2)
+#define CHANNEL_MAPPING_BRGW CHANNEL_MAPPING_C4(2, 0, 1, 3)
+#define CHANNEL_MAPPING_BRWG CHANNEL_MAPPING_C4(2, 0, 3, 1)
+#define CHANNEL_MAPPING_BGRW CHANNEL_MAPPING_C4(2, 1, 0, 3)
+#define CHANNEL_MAPPING_BGWR CHANNEL_MAPPING_C4(2, 1, 3, 0)
+#define CHANNEL_MAPPING_BWRG CHANNEL_MAPPING_C4(2, 3, 0, 1)
+#define CHANNEL_MAPPING_BWGR CHANNEL_MAPPING_C4(2, 3, 1, 0)
+#define CHANNEL_MAPPING_WRBG CHANNEL_MAPPING_C4(3, 0, 2, 1)
+#define CHANNEL_MAPPING_WRGB CHANNEL_MAPPING_C4(3, 0, 1, 2)
+#define CHANNEL_MAPPING_WGBR CHANNEL_MAPPING_C4(3, 1, 2, 0)
+#define CHANNEL_MAPPING_WGRB CHANNEL_MAPPING_C4(3, 1, 0, 2)
+#define CHANNEL_MAPPING_WBGR CHANNEL_MAPPING_C4(3, 2, 1, 0)
+#define CHANNEL_MAPPING_WBRG CHANNEL_MAPPING_C4(3, 2, 0, 1)
 
-#define OPTION_FRAME_RENDERED (1 << 0)
-#define OPTION_TYPE_WS2801    (TYPE_WS2801 << 1)
-#define OPTION_TYPE_WS2811    (TYPE_WS2811 << 1)
-#define OPTION_TYPE_WS2812    (TYPE_WS2812 << 1)
-#define OPTION_TYPE_LPD8806   (TYPE_LPD8806 << 1)
-#define OPTION_TYPE_APA102    (TYPE_APA102 << 1)
-#define OPTION_DATA_CHANGED   (1 << 4)
-#define OPTION_DATA_ONE_MORE  (1 << 5)
-#define OPTION_4_CHANNELS     (1 << 6)
+#define OPTION_TYPE_MASK        (7 << 1)
+
+#define OPTION_FRAME_RENDERED   (1 << 0)
+#define OPTION_TYPE_WS2801      (TYPE_WS2801 << 1)
+#define OPTION_TYPE_WS2811      (TYPE_WS2811 << 1)
+#define OPTION_TYPE_WS2812      (TYPE_WS2812 << 1)
+#define OPTION_TYPE_LPD8806     (TYPE_LPD8806 << 1)
+#define OPTION_TYPE_APA102      (TYPE_APA102 << 1)
+#define OPTION_DATA_CHANGED     (1 << 4)
+#define OPTION_DATA_ONE_MORE    (1 << 5)
+#define OPTION_4_CHANNELS       (1 << 6)
 
 #define FID_SET_RGB_VALUES      1
 #define FID_GET_RGB_VALUES      2
@@ -103,9 +106,9 @@ typedef struct {
 	MessageHeader header;
 	uint16_t index;
 	uint8_t length;
-	uint8_t r[C3_VALUE_SIZE];
-	uint8_t g[C3_VALUE_SIZE];
-	uint8_t b[C3_VALUE_SIZE];
+	uint8_t r[RGB_VALUE_SIZE];
+	uint8_t g[RGB_VALUE_SIZE];
+	uint8_t b[RGB_VALUE_SIZE];
 } __attribute__((__packed__)) SetRGBValues;
 
 typedef struct {
@@ -116,9 +119,9 @@ typedef struct {
 
 typedef struct {
 	MessageHeader header;
-	uint8_t r[C3_VALUE_SIZE];
-	uint8_t g[C3_VALUE_SIZE];
-	uint8_t b[C3_VALUE_SIZE];
+	uint8_t r[RGB_VALUE_SIZE];
+	uint8_t g[RGB_VALUE_SIZE];
+	uint8_t b[RGB_VALUE_SIZE];
 } __attribute__((__packed__)) GetRGBValuesReturn;
 
 typedef struct {
@@ -181,10 +184,10 @@ typedef struct {
 	MessageHeader header;
 	uint16_t index;
 	uint8_t length;
-	uint8_t r[C4_VALUE_SIZE];
-	uint8_t g[C4_VALUE_SIZE];
-	uint8_t b[C4_VALUE_SIZE];
-	uint8_t w[C4_VALUE_SIZE];
+	uint8_t r[RGBW_VALUE_SIZE];
+	uint8_t g[RGBW_VALUE_SIZE];
+	uint8_t b[RGBW_VALUE_SIZE];
+	uint8_t w[RGBW_VALUE_SIZE];
 } __attribute__((__packed__)) SetRGBWValues;
 
 typedef struct {
@@ -195,10 +198,10 @@ typedef struct {
 
 typedef struct {
 	MessageHeader header;
-	uint8_t r[C4_VALUE_SIZE];
-	uint8_t g[C4_VALUE_SIZE];
-	uint8_t b[C4_VALUE_SIZE];
-	uint8_t w[C4_VALUE_SIZE];
+	uint8_t r[RGBW_VALUE_SIZE];
+	uint8_t g[RGBW_VALUE_SIZE];
+	uint8_t b[RGBW_VALUE_SIZE];
+	uint8_t w[RGBW_VALUE_SIZE];
 } __attribute__((__packed__)) GetRGBWValuesReturn;
 
 typedef struct {
@@ -237,11 +240,11 @@ void option_ws281x(void);
 void option_lpd8806(void);
 void option_apa102(void);
 
-void set_c3_by_global_index(uint16_t index, uint8_t *c3);
-void get_c3_from_global_index(uint16_t index, uint8_t *c3);
+void set_rgb_by_global_index(uint16_t index, uint8_t *rgb);
+void get_rgb_from_global_index(uint16_t index, uint8_t *rgb);
 
-void set_c4_by_global_index(uint16_t index, uint8_t *c4);
-void get_c4_from_global_index(uint16_t index, uint8_t *c4);
+void set_rgbw_by_global_index(uint16_t index, uint8_t *rgbw);
+void get_rgbw_from_global_index(uint16_t index, uint8_t *rgbw);
 
 void invocation(const ComType com, const uint8_t *data);
 void constructor(void);

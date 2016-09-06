@@ -117,7 +117,7 @@ void bb_write_with_clock(const uint32_t value, const int8_t bit_count) {
 	}
 }
 
-BrickContext *get_bc_from_global_index(uint16_t *index, uint8_t block_length) {
+BrickContext *get_buffer_bc_from_global_index(uint16_t *index, uint8_t block_length) {
 	uint8_t bc_num = 0;
 
 	for (; bc_num < 4; bc_num++) {
@@ -139,98 +139,52 @@ BrickContext *get_bc_from_global_index(uint16_t *index, uint8_t block_length) {
 	return BCO_DIRECT(bc_num + bc_diff);
 }
 
-void set_c3_by_global_index(uint16_t index, uint8_t *c3) {
-	BrickContext *bc = get_bc_from_global_index(&index, BUFFER_LENGTH / 3);
+void set_rgb_by_global_index(uint16_t index, uint8_t *rgb) {
+	BrickContext *buffer_bc = get_buffer_bc_from_global_index(&index, BUFFER_LENGTH / 3);
+	uint8_t *dst_rgb = buffer_bc->rgb[index];
 
-	bc->c3[index][0] = c3[0];
-	bc->c3[index][1] = c3[1];
-	bc->c3[index][2] = c3[2];
+	dst_rgb[0] = rgb[0];
+	dst_rgb[1] = rgb[1];
+	dst_rgb[2] = rgb[2];
 
-	BC->options |= OPTION_DATA_CHANGED;
-	BC->options |= OPTION_DATA_ONE_MORE;
+	BC->options |= OPTION_DATA_CHANGED | OPTION_DATA_ONE_MORE;
 }
 
-void get_c3_from_global_index(uint16_t index, uint8_t *c3) {
-	BrickContext *bc = get_bc_from_global_index(&index, BUFFER_LENGTH / 3);
+void get_rgb_from_global_index(uint16_t index, uint8_t *rgb) {
+	BrickContext *buffer_bc = get_buffer_bc_from_global_index(&index, BUFFER_LENGTH / 3);
+	uint8_t *src_rgb = buffer_bc->rgb[index];
 
-	c3[0] = bc->c3[index][0];
-	c3[1] = bc->c3[index][1];
-	c3[2] = bc->c3[index][2];
-}
-
-static const uint8_t rgb_mapping[][3] = {
-	/* RGB */ {0, 1, 2},
-	/* RBG */ {0, 2, 1},
-	/* BRG */ {2, 0, 1},
-	/* BGR */ {2, 1, 0},
-	/* GRB */ {1, 0, 2},
-	/* GBR */ {1, 2, 0},
-};
-
-uint8_t get_rgb_mapping_index(void) {
-	switch (BC->channel_mapping) {
-	default:
-	case CHANNEL_MAPPING_RGB:
-	case CHANNEL_MAPPING_RGBW:
-	case CHANNEL_MAPPING_RGWB:
-	case CHANNEL_MAPPING_RWGB:
-	case CHANNEL_MAPPING_WRGB: return 0;
-
-	case CHANNEL_MAPPING_RBG:
-	case CHANNEL_MAPPING_RBGW:
-	case CHANNEL_MAPPING_RBWG:
-	case CHANNEL_MAPPING_RWBG:
-	case CHANNEL_MAPPING_WRBG: return 1;
-
-	case CHANNEL_MAPPING_BRG:
-	case CHANNEL_MAPPING_BRGW:
-	case CHANNEL_MAPPING_BRWG:
-	case CHANNEL_MAPPING_BWRG:
-	case CHANNEL_MAPPING_WBRG: return 2;
-
-	case CHANNEL_MAPPING_BGR:
-	case CHANNEL_MAPPING_BGRW:
-	case CHANNEL_MAPPING_BGWR:
-	case CHANNEL_MAPPING_BWGR:
-	case CHANNEL_MAPPING_WBGR: return 3;
-
-	case CHANNEL_MAPPING_GRB:
-	case CHANNEL_MAPPING_GRBW:
-	case CHANNEL_MAPPING_GRWB:
-	case CHANNEL_MAPPING_GWRB:
-	case CHANNEL_MAPPING_WGRB: return 4;
-
-	case CHANNEL_MAPPING_GBR:
-	case CHANNEL_MAPPING_GBRW:
-	case CHANNEL_MAPPING_GBWR:
-	case CHANNEL_MAPPING_GWBR:
-	case CHANNEL_MAPPING_WGBR: return 5;
-	}
+	rgb[0] = src_rgb[0];
+	rgb[1] = src_rgb[1];
+	rgb[2] = src_rgb[2];
 }
 
 void set_rgb_values(const ComType com, const SetRGBValues *data) {
-	if((data->index + data->length > BC->max_buffer_length / 3) || (data->length > C3_VALUE_SIZE)) {
-		BA->com_return_error(data, sizeof(MessageHeader), MESSAGE_ERROR_CODE_INVALID_PARAMETER, com);
+	BrickContext *bc = BC;
+	BrickletAPI *ba = BA;
+
+	if((data->index + data->length > BC->max_buffer_length / 3) || (data->length > RGB_VALUE_SIZE)) {
+		ba->com_return_error(data, sizeof(MessageHeader), MESSAGE_ERROR_CODE_INVALID_PARAMETER, com);
 		return;
 	}
 
-	BC->frame_length = MAX(BC->frame_length, data->index + data->length);
-	BC->options &= ~OPTION_4_CHANNELS;
-
-	const uint8_t *m = rgb_mapping[get_rgb_mapping_index()];
+	bc->frame_length = MAX(BC->frame_length, data->index + data->length);
+	bc->options &= ~OPTION_4_CHANNELS;
 
 	for(uint8_t i = 0; i < data->length; i++) {
-		uint8_t in[3] = {data->r[i], data->g[i], data->b[i]};
-		uint8_t c3[3] = {in[m[0]], in[m[1]], in[m[2]]};
-		set_c3_by_global_index(data->index + i, c3);
+		uint8_t rgb[3] = {data->r[i], data->g[i], data->b[i]};
+
+		set_rgb_by_global_index(data->index + i, rgb);
 	}
 
-	BA->com_return_setter(com, data);
+	ba->com_return_setter(com, data);
 }
 
 void get_rgb_values(const ComType com, const GetRGBValues *data) {
-	if((data->index + data->length > BC->max_buffer_length / 3) || (data->length > C3_VALUE_SIZE)) {
-		BA->com_return_error(data, sizeof(MessageHeader), MESSAGE_ERROR_CODE_INVALID_PARAMETER, com);
+	BrickletAPI *ba = BA;
+
+	if((data->index + data->length > BC->max_buffer_length / 3) || (data->length > RGB_VALUE_SIZE)) {
+		ba->com_return_error(data, sizeof(MessageHeader), MESSAGE_ERROR_CODE_INVALID_PARAMETER, com);
 		return;
 	}
 
@@ -238,18 +192,17 @@ void get_rgb_values(const ComType com, const GetRGBValues *data) {
 	grgbvr.header         = data->header;
 	grgbvr.header.length  = sizeof(GetRGBValuesReturn);
 
-	const uint8_t *m = rgb_mapping[get_rgb_mapping_index()];
-	uint8_t c3[3];
+	uint8_t rgb[3];
 
 	for(uint16_t i = 0; i < data->length; i++) {
-		get_c3_from_global_index(data->index + i, c3);
+		get_rgb_from_global_index(data->index + i, rgb);
 
-		grgbvr.r[i] = c3[m[0]];
-		grgbvr.g[i] = c3[m[1]];
-		grgbvr.b[i] = c3[m[2]];
+		grgbvr.r[i] = rgb[0];
+		grgbvr.g[i] = rgb[1];
+		grgbvr.b[i] = rgb[2];
 	}
 
-	BA->send_blocking_with_timeout(&grgbvr, sizeof(GetRGBValuesReturn), com);
+	ba->send_blocking_with_timeout(&grgbvr, sizeof(GetRGBValuesReturn), com);
 }
 
 void set_frame_duration(const ComType com, const SetFrameDuration *data) {
@@ -328,11 +281,6 @@ void get_chip_type(const ComType com, const GetChipType *data) {
 }
 
 void set_channel_mapping(const ComType com, const SetChannelMapping *data) {
-	if(data->channel_mapping > CHANNEL_MAPPING_WBRG) {
-		BA->com_return_error(data, sizeof(MessageHeader), MESSAGE_ERROR_CODE_INVALID_PARAMETER, com);
-		return;
-	}
-
 	BC->channel_mapping = data->channel_mapping;
 	BA->com_return_setter(com, data);
 }
@@ -347,93 +295,52 @@ void get_channel_mapping(const ComType com, const GetChannelMapping *data) {
 	BA->send_blocking_with_timeout(&gcmr, sizeof(GetChannelMappingReturn), com);
 }
 
-static const uint8_t rgbw_mapping[][4] = {
-	/* RGBW */ {0, 1, 2, 3},
-	/* RBGW */ {0, 2, 1, 3},
-	/* BRGW */ {2, 0, 1, 3},
-	/* BGRW */ {2, 1, 0, 3},
-	/* GRBW */ {1, 0, 2, 3},
-	/* GBRW */ {1, 2, 0, 3},
-
-	/* RGWB */ {0, 1, 3, 2},
-	/* RBWG */ {0, 2, 3, 1},
-	/* RWGB */ {0, 3, 1, 2},
-	/* RWBG */ {0, 3, 2, 1},
-	/* GRWB */ {1, 0, 3, 2},
-	/* GBWR */ {1, 2, 3, 0},
-	/* GWBR */ {1, 3, 2, 0},
-	/* GWRB */ {1, 3, 0, 2},
-	/* BRWG */ {2, 0, 3, 1},
-	/* BGWR */ {2, 1, 3, 0},
-	/* BWRG */ {2, 3, 0, 1},
-	/* BWGR */ {2, 3, 1, 0},
-	/* WRBG */ {3, 0, 2, 1},
-	/* WRGB */ {3, 0, 1, 2},
-	/* WGBR */ {3, 1, 2, 0},
-	/* WGRB */ {3, 1, 0, 2},
-	/* WBGR */ {3, 2, 1, 0},
-	/* WBRG */ {3, 2, 0, 1},
-};
-
-uint8_t get_rgbw_mapping_index(void) {
-	switch (BC->channel_mapping) {
-	default:
-	case CHANNEL_MAPPING_RGB:
-	case CHANNEL_MAPPING_RGBW: return 0;
-	case CHANNEL_MAPPING_RBG:
-	case CHANNEL_MAPPING_RBGW: return 1;
-	case CHANNEL_MAPPING_BRG:
-	case CHANNEL_MAPPING_BRGW: return 2;
-	case CHANNEL_MAPPING_BGR:
-	case CHANNEL_MAPPING_BGRW: return 3;
-	case CHANNEL_MAPPING_GRB:
-	case CHANNEL_MAPPING_GRBW: return 4;
-	case CHANNEL_MAPPING_GBR:
-	case CHANNEL_MAPPING_GBRW: return 5;
-	case CHANNEL_MAPPING_RGWB: return 6;
-	case CHANNEL_MAPPING_RBWG: return 7;
-	case CHANNEL_MAPPING_RWGB: return 8;
-	case CHANNEL_MAPPING_RWBG: return 9;
-	case CHANNEL_MAPPING_GRWB: return 10;
-	case CHANNEL_MAPPING_GBWR: return 11;
-	case CHANNEL_MAPPING_GWBR: return 12;
-	case CHANNEL_MAPPING_GWRB: return 13;
-	case CHANNEL_MAPPING_BRWG: return 14;
-	case CHANNEL_MAPPING_BGWR: return 15;
-	case CHANNEL_MAPPING_BWRG: return 16;
-	case CHANNEL_MAPPING_BWGR: return 18;
-	case CHANNEL_MAPPING_WRBG: return 19;
-	case CHANNEL_MAPPING_WRGB: return 20;
-	case CHANNEL_MAPPING_WGBR: return 21;
-	case CHANNEL_MAPPING_WGRB: return 22;
-	case CHANNEL_MAPPING_WBGR: return 23;
-	case CHANNEL_MAPPING_WBRG: return 24;
-	}
-}
-
-void set_rgbw_values(const ComType com, const SetRGBWValues *data) {
-	if(data->index + data->length > BC->max_buffer_length / 4 || data->length > C4_VALUE_SIZE) {
-		BA->com_return_error(data, sizeof(MessageHeader), MESSAGE_ERROR_CODE_INVALID_PARAMETER, com);
-		return;
-	}
-
-	BC->frame_length = MAX(BC->frame_length, data->index + data->length);
-	BC->options |= OPTION_4_CHANNELS;
-
-	const uint8_t *m = rgbw_mapping[get_rgbw_mapping_index()];
-
-	for(uint8_t i = 0; i < data->length; i++) {
-		const uint8_t in[4] = {data->r[i], data->g[i], data->b[i], data->w[i]};
-		uint8_t c4[4] = {in[m[0]], in[m[1]], in[m[2]], in[m[3]]};
-		set_c4_by_global_index(data->index + i, c4);
-	}
-
+void enable_frame_rendered_callback(const ComType com, const EnableFrameRenderedCallback *data) {
+	BC->options |= OPTION_CALLBACK_ENABLED;
 	BA->com_return_setter(com, data);
 }
 
+void disable_frame_rendered_callback(const ComType com, const DisableFrameRenderedCallback *data) {
+	BC->options &= ~OPTION_CALLBACK_ENABLED;
+	BA->com_return_setter(com, data);
+}
+
+void is_frame_rendered_callback_enabled(const ComType com, const IsFrameRenderedCallbackEnabled *data) {
+	IsFrameRenderedCallbackEnabledReturn ifrcer;
+
+	ifrcer.header         = data->header;
+	ifrcer.header.length  = sizeof(ifrcer);
+	ifrcer.enabled        = (BC->options & OPTION_CALLBACK_ENABLED) != 0;
+
+	BA->send_blocking_with_timeout(&ifrcer, sizeof(ifrcer), com);
+}
+
+void set_rgbw_values(const ComType com, const SetRGBWValues *data) {
+	BrickContext *bc = BC;
+	BrickletAPI *ba = BA;
+
+	if(data->index + data->length > bc->max_buffer_length / 4 || data->length > RGBW_VALUE_SIZE) {
+		ba->com_return_error(data, sizeof(MessageHeader), MESSAGE_ERROR_CODE_INVALID_PARAMETER, com);
+		return;
+	}
+
+	bc->frame_length = MAX(BC->frame_length, data->index + data->length);
+	bc->options |= OPTION_4_CHANNELS;
+
+	for(uint8_t i = 0; i < data->length; i++) {
+		uint8_t rgbw[4] = {data->r[i], data->g[i], data->b[i], data->w[i]};
+
+		set_rgbw_by_global_index(data->index + i, rgbw);
+	}
+
+	ba->com_return_setter(com, data);
+}
+
 void get_rgbw_values(const ComType com, const GetRGBWValues *data) {
-	if(data->index + data->length > BC->max_buffer_length / 4 || data->length > C4_VALUE_SIZE) {
-		BA->com_return_error(data, sizeof(MessageHeader), MESSAGE_ERROR_CODE_INVALID_PARAMETER, com);
+	BrickletAPI *ba = BA;
+
+	if(data->index + data->length > BC->max_buffer_length / 4 || data->length > RGBW_VALUE_SIZE) {
+		ba->com_return_error(data, sizeof(MessageHeader), MESSAGE_ERROR_CODE_INVALID_PARAMETER, com);
 		return;
 	}
 
@@ -441,40 +348,40 @@ void get_rgbw_values(const ComType com, const GetRGBWValues *data) {
 	grgbwvr.header         = data->header;
 	grgbwvr.header.length  = sizeof(GetRGBWValuesReturn);
 
-	const uint8_t *m = rgbw_mapping[get_rgbw_mapping_index()];
-	uint8_t c4[4];
+	uint8_t rgbw[4];
 
 	for(uint16_t i = 0; i < data->length; i++) {
-		get_c4_from_global_index(data->index + i, c4);
+		get_rgbw_from_global_index(data->index + i, rgbw);
 
-		grgbwvr.r[i] = c4[m[0]];
-		grgbwvr.g[i] = c4[m[1]];
-		grgbwvr.b[i] = c4[m[2]];
-		grgbwvr.w[i] = c4[m[3]];
+		grgbwvr.r[i] = rgbw[0];
+		grgbwvr.g[i] = rgbw[1];
+		grgbwvr.b[i] = rgbw[2];
+		grgbwvr.w[i] = rgbw[3];
 	}
 
-	BA->send_blocking_with_timeout(&grgbwvr, sizeof(GetRGBWValuesReturn), com);
+	ba->send_blocking_with_timeout(&grgbwvr, sizeof(GetRGBWValuesReturn), com);
 }
 
-void get_c4_from_global_index(uint16_t index, uint8_t *c4) {
-	BrickContext *bc = get_bc_from_global_index(&index, BUFFER_LENGTH / 4);
+void get_rgbw_from_global_index(uint16_t index, uint8_t *rgbw) {
+	BrickContext *buffer_bc = get_buffer_bc_from_global_index(&index, BUFFER_LENGTH / 4);
+	uint8_t *src_rgbw = buffer_bc->rgbw[index];
 
-	c4[0] = bc->c4[index][0];
-	c4[1] = bc->c4[index][1];
-	c4[2] = bc->c4[index][2];
-	c4[3] = bc->c4[index][3];
+	rgbw[0] = src_rgbw[0];
+	rgbw[1] = src_rgbw[1];
+	rgbw[2] = src_rgbw[2];
+	rgbw[3] = src_rgbw[3];
 }
 
-void set_c4_by_global_index(uint16_t index, uint8_t *c4) {
-	BrickContext *bc = get_bc_from_global_index(&index, BUFFER_LENGTH / 4);
+void set_rgbw_by_global_index(uint16_t index, uint8_t *rgbw) {
+	BrickContext *buffer_bc = get_buffer_bc_from_global_index(&index, BUFFER_LENGTH / 4);
+	uint8_t *dst_rgbw = buffer_bc->rgbw[index];
 
-	bc->c4[index][0] = c4[0];
-	bc->c4[index][1] = c4[1];
-	bc->c4[index][2] = c4[2];
-	bc->c4[index][3] = c4[3];
+	dst_rgbw[0] = rgbw[0];
+	dst_rgbw[1] = rgbw[1];
+	dst_rgbw[2] = rgbw[2];
+	dst_rgbw[3] = rgbw[3];
 
-	BC->options |= OPTION_DATA_CHANGED;
-	BC->options |= OPTION_DATA_ONE_MORE;
+	BC->options |= OPTION_DATA_CHANGED | OPTION_DATA_ONE_MORE;
 }
 
 void invocation(const ComType com, const uint8_t *data) {
@@ -582,57 +489,91 @@ void constructor(void) {
 }
 
 void option_ws2801(void) {
-	uint8_t c3[3];
+	BrickContext *bc = BC;
+	uint8_t rgb[3];
+	const uint8_t m[] = {
+		(bc->channel_mapping >> 4) & 0b11,
+		(bc->channel_mapping >> 2) & 0b11,
+		(bc->channel_mapping >> 0) & 0b11,
+	};
 
 	for(uint16_t i = 0; i < BC->frame_length; i++) {
-		get_c3_from_global_index(i, c3);
-		bb_write_with_clock((c3[0] << 16) | (c3[1] << 8) | c3[2], BYTES_3);
+		get_rgb_from_global_index(i, rgb);
+		bb_write_with_clock((rgb[m[0]] << 16) | (rgb[m[1]] << 8) | rgb[m[2]], BYTES_3);
 	}
 }
 
 void option_ws281x(void) {
-	uint8_t c4[4];
+	BrickContext *bc = BC;
 
-	if (BC->options & OPTION_4_CHANNELS) {
+	if (bc->options & OPTION_4_CHANNELS) {
+		uint8_t rgbw[4];
+		const uint8_t m[] = {
+			(bc->channel_mapping >> 6) & 0b11,
+			(bc->channel_mapping >> 4) & 0b11,
+			(bc->channel_mapping >> 2) & 0b11,
+			(bc->channel_mapping >> 0) & 0b11,
+		};
+
 		for(uint16_t i = 0; i < BC->frame_length; i++) {
-			get_c4_from_global_index(i, c4);
-			bb_write_ws281x((c4[0] << 24) | (c4[1] << 16) | (c4[2] << 8) | c4[3], BYTES_4);
+			get_rgbw_from_global_index(i, rgbw);
+			bb_write_ws281x((rgbw[m[0]] << 24) | (rgbw[m[1]] << 16) | (rgbw[m[2]] << 8) | rgbw[m[3]], BYTES_4);
 		};
 	} else {
+		uint8_t rgb[3];
+		const uint8_t m[] = {
+			(bc->channel_mapping >> 4) & 0b11,
+			(bc->channel_mapping >> 2) & 0b11,
+			(bc->channel_mapping >> 0) & 0b11,
+		};
+
 		for(uint16_t i = 0; i < BC->frame_length; i++) {
-			get_c3_from_global_index(i, c4);
-			bb_write_ws281x((c4[0] << 16) | (c4[1] << 8) | c4[2], BYTES_3);
+			get_rgb_from_global_index(i, rgb);
+			bb_write_ws281x((rgb[m[0]] << 16) | (rgb[m[1]] << 8) | rgb[m[2]], BYTES_3);
 		}
 	}
 }
 
 void option_lpd8806(void) {
-	uint8_t c3[3];
+	BrickContext *bc = BC;
+	uint8_t rgb[3];
+	const uint8_t m[] = {
+		(bc->channel_mapping >> 4) & 0b11,
+		(bc->channel_mapping >> 2) & 0b11,
+		(bc->channel_mapping >> 0) & 0b11,
+	};
 
 	for(uint16_t i = 0; i < BC->frame_length; i++) {
-		get_c3_from_global_index(i, c3);
+		get_rgb_from_global_index(i, rgb);
 
 		// +128 because the MSB has to be high while data shifting
-		bb_write_with_clock(((c3[0] / 2 + 128) << 16) | ((c3[1] / 2 + 128) << 8) | (c3[2] / 2 + 128), BYTES_3);
+		bb_write_with_clock(((rgb[m[0]] / 2 + 128) << 16) | ((rgb[m[1]] / 2 + 128) << 8) | (rgb[m[2]] / 2 + 128), BYTES_3);
 	}
 
 	// When MSB is low the shift registers resets and are ready for new data
 	// https://github.com/adafruit/LPD8806/blob/master/LPD8806.cpp
-	for(uint16_t i = (BC->frame_length + 31) / 32; i > 0; --i) {
+	for(uint16_t i = (bc->frame_length + 31) / 32; i > 0; --i) {
 		bb_write_with_clock(0, BYTES_1);
 	}
 }
 
 void option_apa102(void) {
+	BrickContext *bc = BC;
+	uint8_t rgbw[4];
+	const uint8_t m[] = {
+		(bc->channel_mapping >> 6) & 0b11,
+		(bc->channel_mapping >> 4) & 0b11,
+		(bc->channel_mapping >> 2) & 0b11,
+		(bc->channel_mapping >> 0) & 0b11,
+	};
+
 	bb_write_with_clock(0, BYTES_4);
 
-	uint8_t c4[4];
-
 	for(uint16_t i = 0; i < BC->frame_length; i++) {
-		get_c4_from_global_index(i, c4);
+		get_rgbw_from_global_index(i, rgbw);
 
-		// 3-Bit "1" and brightness setting 5-Bit: constant current output value
-		bb_write_with_clock(((0b11100000 | (c4[3] / 8)) << 24) | (c4[0] << 16) | (c4[1] << 8) | c4[2], BYTES_4);
+		// 3-bit "1" and 5-bit brightness
+		bb_write_with_clock(((0b11100000 | (rgbw[m[0]] / 8)) << 24) | (rgbw[m[1]] << 16) | (rgbw[m[2]] << 8) | rgbw[m[3]], BYTES_4);
 	}
 
 	// The datasheet says that there have to be a 4-byte endframe with all bits
