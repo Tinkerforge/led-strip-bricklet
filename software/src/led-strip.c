@@ -235,6 +235,8 @@ void set_clock_frequency(const ComType com, const SetClockFrequency *data) {
 	} else {
 		BC->clock_delay = 1000000000/(data->frequency*2);
 	}
+
+	BA->com_return_setter(com, data);
 }
 
 void get_clock_frequency(const ComType com, const GetClockFrequency *data) {
