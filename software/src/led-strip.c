@@ -212,18 +212,21 @@ void set_frame_duration(const ComType com, const SetFrameDuration *data) {
 
 void get_frame_duration(const ComType com, const GetFrameDuration *data) {
 	GetFrameDurationReturn gcr;
+
 	gcr.header         = data->header;
 	gcr.header.length  = sizeof(GetFrameDurationReturn);
 	gcr.duration       = BC->frame_duration;
+
 	BA->send_blocking_with_timeout(&gcr, sizeof(GetFrameDurationReturn), com);
 }
 
 void get_supply_voltage(const ComType com, const GetSupplyVoltage *data) {
 	GetSupplyVoltageReturn gsvr;
+
 	gsvr.header         = data->header;
 	gsvr.header.length  = sizeof(GetSupplyVoltageReturn);
-	// voltage divider: 10k / 1k
-	gsvr.voltage        = BA->adc_channel_get_data(BS->adc_channel)*3300*11/4095;
+	gsvr.voltage        = BA->adc_channel_get_data(BS->adc_channel)*3300*11/4095; // voltage divider: 10k / 1k
+
 	BA->send_blocking_with_timeout(&gsvr, sizeof(GetSupplyVoltageReturn), com);
 }
 
@@ -241,9 +244,11 @@ void set_clock_frequency(const ComType com, const SetClockFrequency *data) {
 
 void get_clock_frequency(const ComType com, const GetClockFrequency *data) {
 	GetClockFrequencyReturn gcfr;
+
 	gcfr.header         = data->header;
 	gcfr.header.length  = sizeof(GetClockFrequencyReturn);
 	gcfr.frequency      = 1000000000/(BC->clock_delay*2);
+
 	BA->send_blocking_with_timeout(&gcfr, sizeof(GetClockFrequencyReturn), com);
 }
 
