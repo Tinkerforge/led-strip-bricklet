@@ -537,7 +537,7 @@ void option_ws281x(void) {
 			(bc->channel_mapping >> 0) & 0b11,
 		};
 
-		for(uint16_t i = 0; i < BC->frame_length; i++) {
+		for(uint16_t i = 0; i < bc->frame_length; i++) {
 			get_rgbw_from_global_index(i, rgbw);
 			bb_write_ws281x((rgbw[m[0]] << 24) | (rgbw[m[1]] << 16) | (rgbw[m[2]] << 8) | rgbw[m[3]], BYTES_4);
 		};
@@ -549,7 +549,7 @@ void option_ws281x(void) {
 			(bc->channel_mapping >> 0) & 0b11,
 		};
 
-		for(uint16_t i = 0; i < BC->frame_length; i++) {
+		for(uint16_t i = 0; i < bc->frame_length; i++) {
 			get_rgb_from_global_index(i, rgb);
 			bb_write_ws281x((rgb[m[0]] << 16) | (rgb[m[1]] << 8) | rgb[m[2]], BYTES_3);
 		}
@@ -565,7 +565,7 @@ void option_lpd8806(void) {
 		(bc->channel_mapping >> 0) & 0b11,
 	};
 
-	for(uint16_t i = 0; i < BC->frame_length; i++) {
+	for(uint16_t i = 0; i < bc->frame_length; i++) {
 		get_rgb_from_global_index(i, rgb);
 
 		// +128 because the MSB has to be high while data shifting
@@ -591,7 +591,7 @@ void option_apa102(void) {
 
 	bb_write_with_clock(0, BYTES_4);
 
-	for(uint16_t i = 0; i < BC->frame_length; i++) {
+	for(uint16_t i = 0; i < bc->frame_length; i++) {
 		get_rgbw_from_global_index(i, rgbw);
 
 		// 3-bit "1" and 5-bit brightness
