@@ -18,3 +18,9 @@
 - Frame duration of 0 now means that no more frames shall be set
 - Set RGB values at least two times to make sure that they are really written
 - Fix possible overflow if Brick with two Bricklet connectors is used
+
+2016-09-08: 2.0.6 (<unknown>)
+- Fix green flash after reset
+- Add support for RGBW LEDs, channel mapping and SK6812RGBW (NeoPixel RGBW),
+  LPD8806 and ADA102 (DotStar) chip types
+- Make FrameRendered callback configurable
