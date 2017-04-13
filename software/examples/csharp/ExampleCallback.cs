@@ -39,7 +39,7 @@ class Example
 		ls.SetFrameDuration(50);
 
 		// Register frame rendered callback to function FrameRenderedCB
-		ls.FrameRendered += FrameRenderedCB;
+		ls.FrameRenderedCallback += FrameRenderedCB;
 
 		// Set initial rgb values to get started
 		ls.SetRGBValues(0, NUM_LEDS, r, g, b);
