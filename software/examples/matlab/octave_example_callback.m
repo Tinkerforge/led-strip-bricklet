@@ -17,8 +17,8 @@ function octave_example_callback()
     b = [0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0];
     r_index = 1;
 
-    ipcon = java_new("com.tinkerforge.IPConnection"); % Create IP connection
-    ls = java_new("com.tinkerforge.BrickletLEDStrip", UID, ipcon); % Create device object
+    ipcon = javaObject("com.tinkerforge.IPConnection"); % Create IP connection
+    ls = javaObject("com.tinkerforge.BrickletLEDStrip", UID, ipcon); % Create device object
 
     ipcon.connect(HOST, PORT); % Connect to brickd
     % Don't use device before ipcon is connected
