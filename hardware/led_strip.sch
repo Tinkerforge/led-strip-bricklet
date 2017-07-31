@@ -1,4 +1,5 @@
 EESchema Schematic File Version 2
+LIBS:tinkerforge
 LIBS:power
 LIBS:device
 LIBS:transistors
@@ -10,7 +11,6 @@ LIBS:cmos4000
 LIBS:adc-dac
 LIBS:memory
 LIBS:xilinx
-LIBS:special
 LIBS:microcontrollers
 LIBS:dsp
 LIBS:microchip
@@ -29,7 +29,6 @@ LIBS:opto
 LIBS:atmel
 LIBS:contrib
 LIBS:valves
-LIBS:tinkerforge
 EELAYER 25 0
 EELAYER END
 $Descr A4 11693 8268
@@ -337,7 +336,7 @@ Wire Wire Line
 	4900 4250 4900 4800
 Connection ~ 7550 4650
 $Comp
-L MOSFET_N Q1
+L MOSFET_N_CH Q1
 U 1 1 5200DC67
 P 5750 4500
 F 0 "Q1" H 5760 4670 60  0000 R CNN
@@ -348,7 +347,7 @@ F 3 "" H 5750 4500 60  0000 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L MOSFET_N Q2
+L MOSFET_N_CH Q2
 U 1 1 5200DC94
 P 6150 4600
 F 0 "Q2" H 6160 4770 60  0000 R CNN
@@ -556,7 +555,7 @@ F 1 "FB" V 4500 2550 40  0000 C CNN
 F 2 "kicad-libraries:0603" H 4400 2550 60  0001 C CNN
 F 3 "" H 4400 2550 60  0000 C CNN
 	1    4400 2550
-	0    -1   -1   0   
+	1    0    0    -1  
 $EndComp
 $Comp
 L GND #PWR011
