@@ -30,7 +30,7 @@ FrameRenderedCB[sender_,length_]:=
   sender@SetRGBValues[0,numLEDs,r,g,b]
  ]
 
-AddEventHandler[ls@FrameRendered,FrameRenderedCB]
+AddEventHandler[ls@FrameRenderedCallback,FrameRenderedCB]
 
 (* Set initial rgb values to get started *)
 ls@SetRGBValues[0,numLEDs,r,g,b]

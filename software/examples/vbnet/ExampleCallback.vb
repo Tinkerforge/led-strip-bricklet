@@ -37,7 +37,7 @@ Module ExampleCallback
         ls.SetFrameDuration(50)
 
         ' Register frame rendered callback to subroutine FrameRenderedCB
-        AddHandler ls.FrameRendered, AddressOf FrameRenderedCB
+        AddHandler ls.FrameRenderedCallback, AddressOf FrameRenderedCB
 
         ' Set initial rgb values to get started
         ls.SetRGBValues(0, NUM_LEDS, r, g, b)
