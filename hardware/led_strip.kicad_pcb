@@ -1,9 +1,9 @@
-(kicad_pcb (version 4) (host pcbnew 4.0.2+dfsg1-stable)
+(kicad_pcb (version 4) (host pcbnew 4.0.7-e2-6376~58~ubuntu17.04.1)
 
   (general
     (links 46)
     (no_connects 0)
-    (area 42.709499 27.109499 73.090501 57.490501)
+    (area 41.994339 26.394339 282.27147 165.489573)
     (thickness 1.6002)
     (drawings 19)
     (tracks 209)
@@ -6438,14 +6438,14 @@
     )
   )
 
-  (module kicad-libraries:F1206 (layer Vorderseite) (tedit 58FA4AE5) (tstamp 597F49CB)
+  (module kicad-libraries:F1206 (layer Vorderseite) (tedit 5ABB3E02) (tstamp 597F49CB)
     (at 58.9 40.2)
     (path /559D721B)
     (attr smd)
     (fp_text reference F1 (at 0 0.5375) (layer F.Fab)
       (effects (font (size 0.3 0.3) (thickness 0.075)))
     )
-    (fp_text value FUSE (at 0 -0.65) (layer F.Fab)
+    (fp_text value 0ZCJ0035FF2G (at 0 -0.65) (layer F.Fab)
       (effects (font (size 0.3 0.3) (thickness 0.075)))
     )
     (fp_line (start -2.25044 -1.09982) (end -2.25044 1.09982) (layer F.Fab) (width 0.001))

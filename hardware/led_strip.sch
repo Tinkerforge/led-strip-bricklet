@@ -1,5 +1,4 @@
 EESchema Schematic File Version 2
-LIBS:tinkerforge
 LIBS:power
 LIBS:device
 LIBS:transistors
@@ -614,7 +613,7 @@ L FUSE F1
 U 1 1 559D721B
 P 6300 5700
 F 0 "F1" H 6400 5750 40  0000 C CNN
-F 1 "FUSE" H 6200 5650 40  0000 C CNN
+F 1 "0ZCJ0035FF2G" H 6200 5650 40  0000 C CNN
 F 2 "kicad-libraries:F1206" H 6300 5700 60  0001 C CNN
 F 3 "" H 6300 5700 60  0000 C CNN
 	1    6300 5700
