@@ -15,16 +15,18 @@ uint8_t r_index = 0;
 
 // Use frame rendered callback to move the active LED every frame
 void cb_frame_rendered(uint16_t length, void *user_data) {
-	LEDStrip *ls = (LEDStrip *)user_data;
-
 	(void)length; // avoid unused parameter warning
 
+	LEDStrip *ls = (LEDStrip *)user_data;
+
 	b[r_index] = 0;
+
 	if(r_index == NUM_LEDS-1) {
 		r_index = 0;
 	} else {
 		r_index++;
 	}
+
 	b[r_index] = 255;
 
 	// Set new data for next render cycle
