@@ -16,15 +16,15 @@ fn main() -> Result<(), Box<dyn Error>> {
     // Set frame duration to 50ms (20 frames per second)
     ls.set_frame_duration(50);
 
-    //Create receiver for frame rendered events.
-    let frame_rendered_receiver = ls.get_frame_rendered_receiver();
+    let frame_rendered_receiver = ls.get_frame_rendered_callback_receiver();
 
     let r = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
     let g = [255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 0, 0, 0, 0, 0, 0];
     let mut b = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
     ls.set_rgb_values(0, NUM_LEDS, r, g, b);
 
-    // Spawn thread to handle received events. This thread ends when the ls
+    // Spawn thread to handle received events.
+    // This thread ends when the `ls` object
     // is dropped, so there is no need for manual cleanup.
     thread::spawn(move || {
         let mut r_index = 0u8;
