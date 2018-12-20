@@ -19,9 +19,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let frame_rendered_receiver = ls.get_frame_rendered_callback_receiver();
 
     let r = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-    let g = [
-        255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 0, 0, 0, 0, 0, 0,
-    ];
+    let g = [255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 0, 0, 0, 0, 0, 0];
     let mut b = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
     ls.set_rgb_values(0, NUM_LEDS, r, g, b);
 
