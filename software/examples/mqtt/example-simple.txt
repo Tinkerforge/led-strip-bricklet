@@ -1,0 +1,8 @@
+# Change XYZ to the UID of your LED Strip Bricklet
+
+setup:
+    set r to [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+    set g to [255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 0, 0, 0, 0, 0, 0]
+    set b to [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+    
+    publish {"index": 0, "length": 10, "r": r, "g": g, "b": b"} to tinkerforge/request/led_strip_bricklet/XYZ/set_rgb_values
