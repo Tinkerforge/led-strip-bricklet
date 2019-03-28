@@ -13,10 +13,9 @@ function matlab_example_simple()
     % Don't use device before ipcon is connected
 
     % Set first 10 LEDs to green
-    r = [0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0];
-    g = [255 255 255 255 255 255 255 255 255 255 0 0 0 0 0 0];
-    b = [0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0];
-    ls.setRGBValues(0, 10, r, g, b);
+    ls.setRGBValues(0, 10, [0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0], ...
+                    [255 255 255 255 255 255 255 255 255 255 0 0 0 0 0 0], ...
+                    [0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0]);
 
     input('Press key to exit\n', 's');
     ipcon.disconnect();

@@ -16,10 +16,9 @@ class Example
 		// Don't use device before ipcon is connected
 
 		// Set first 10 LEDs to green
-		byte[] r = new byte[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-		byte[] g = new byte[] {255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 0, 0, 0, 0, 0, 0};
-		byte[] b = new byte[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ,0 ,0};
-		ls.SetRGBValues(0, 10, r, g, b);
+		ls.SetRGBValues(0, 10, new byte[]{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+		                new byte[]{255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 0, 0, 0, 0, 0, 0},
+		                new byte[]{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0});
 
 		Console.WriteLine("Press enter to exit");
 		Console.ReadLine();

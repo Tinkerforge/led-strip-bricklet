@@ -18,11 +18,10 @@ func main() {
 	defer ipcon.Disconnect()
 	// Don't use device before ipcon is connected.
 
-	var r [16]uint8
-	g := [16]uint8{255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 0, 0, 0, 0, 0, 0}
-	var b [16]uint8
-
-	ls.SetRGBValues(0, 10, r, g, b)
+	// Set first 10 LEDs to green
+	ls.SetRGBValues(0, 10, [16]uint8{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+		[16]uint8{255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 0, 0, 0, 0, 0, 0},
+		[16]uint8{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0})
 
 	fmt.Print("Press enter to exit.")
 	fmt.Scanln()

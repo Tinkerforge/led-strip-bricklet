@@ -18,10 +18,10 @@ public class ExampleSimple {
 		// Don't use device before ipcon is connected
 
 		// Set first 10 LEDs to green
-		short[] r = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-		short[] g = {255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 0, 0, 0, 0, 0, 0};
-		short[] b = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-		ls.setRGBValues(0, (short)10, r, g, b);
+		ls.setRGBValues(0, (short)10,
+		                new short[]{(short)0, (short)0, (short)0, (short)0, (short)0, (short)0, (short)0, (short)0, (short)0, (short)0, (short)0, (short)0, (short)0, (short)0, (short)0, (short)0},
+		                new short[]{(short)255, (short)255, (short)255, (short)255, (short)255, (short)255, (short)255, (short)255, (short)255, (short)255, (short)0, (short)0, (short)0, (short)0, (short)0, (short)0},
+		                new short[]{(short)0, (short)0, (short)0, (short)0, (short)0, (short)0, (short)0, (short)0, (short)0, (short)0, (short)0, (short)0, (short)0, (short)0, (short)0, (short)0});
 
 		System.out.println("Press key to exit"); System.in.read();
 		ipcon.disconnect();

@@ -24,9 +24,9 @@ int main(void) {
 	// Don't use device before ipcon is connected
 
 	// Set first 10 LEDs to green
-	uint8_t r[16] = {0};
-	uint8_t g[16] = {255, 255, 255, 255, 255, 255, 255, 255, 255, 255};
-	uint8_t b[16] = {0};
+	uint8_t r[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+	uint8_t g[16] = {255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 0, 0, 0, 0, 0, 0};
+	uint8_t b[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 	led_strip_set_rgb_values(&ls, 0, 10, r, g, b);
 
 	printf("Press key to exit\n");

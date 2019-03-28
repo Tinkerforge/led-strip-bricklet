@@ -19,12 +19,6 @@ const
   HOST = 'localhost';
   PORT = 4223;
   UID = 'XYZ'; { Change XYZ to the UID of your LED Strip Bricklet }
-  r: {$ifdef FPC}array [0..15] of byte{$else}TArray0To15OfUInt8{$endif} =
-     (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
-  g: {$ifdef FPC}array [0..15] of byte{$else}TArray0To15OfUInt8{$endif} =
-     (255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 0, 0, 0, 0, 0, 0);
-  b: {$ifdef FPC}array [0..15] of byte{$else}TArray0To15OfUInt8{$endif} =
-     (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 
 var
   e: TExample;
@@ -42,7 +36,9 @@ begin
   { Don't use device before ipcon is connected }
 
   { Set first 10 LEDs to green }
-  ls.SetRGBValues(0, 10, r, g, b);
+  ls.SetRGBValues(0, 10, [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                  [255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 0, 0, 0, 0, 0, 0],
+                  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
 
   WriteLn('Press key to exit');
   ReadLn;
