@@ -55,7 +55,7 @@ int main(void) {
 	// Register frame rendered callback to function cb_frame_rendered
 	led_strip_register_callback(&ls,
 	                            LED_STRIP_CALLBACK_FRAME_RENDERED,
-	                            (void *)cb_frame_rendered,
+	                            (void (*)(void))cb_frame_rendered,
 	                            &ls);
 
 	// Set initial rgb values to get started
