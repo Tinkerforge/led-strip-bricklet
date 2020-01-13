@@ -2,4 +2,8 @@
 
 setup:
 	# Set first 10 LEDs to green
+<<<<<<< Updated upstream
 	publish '{"index": 0, "length": 10, "r": [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], "g": [255,255,255,255,255,255,255,255,255,255,0,0,0,0,0,0], "b": [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]}' to tinkerforge/request/led_strip_bricklet/XYZ/set_rgb_values 
+=======
+	publish '{"index": 0, "length": 10, "r": [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], "g": [255,255,255,255,255,255,255,255,255,255,0,0,0,0,0,0], "b": [255,255,255,255,255,255,255,255,255,255,0,0,0,0,0,0]}' to tinkerforge/request/led_strip_bricklet/XYZ/set_rgb_values 
+>>>>>>> Stashed changes
