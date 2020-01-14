@@ -45,5 +45,5 @@ if __name__ == "__main__":
     # Set initial rgb values to get started
     ls.set_rgb_values(0, NUM_LEDS, r, g, b)
 
-    raw_input("Press key to exit\n") # Use input() in Python 3
+    input("Press key to exit\n") # Use raw_input() in Python 2
     ipcon.disconnect()
