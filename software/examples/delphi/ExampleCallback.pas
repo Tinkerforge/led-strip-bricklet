@@ -16,7 +16,7 @@ type
     b: {$ifdef FPC}array [0..15] of byte{$else}TArray0To15OfUInt8{$endif};
     rIndex: integer;
   public
-    procedure FrameRenderedCB(sender: TBrickletLEDStrip; const length: word);
+    procedure FrameRenderedCB(sender: TBrickletLEDStrip; const length_: word);
     procedure Execute;
   end;
 
@@ -30,7 +30,7 @@ var
   e: TExample;
 
 { Use frame rendered callback to move the active LED every frame }
-procedure TExample.FrameRenderedCB(sender: TBrickletLEDStrip; const length: word);
+procedure TExample.FrameRenderedCB(sender: TBrickletLEDStrip; const length_: word);
 begin
   b[rIndex] := 0;
   if rIndex = NUM_LEDS-1 then begin
